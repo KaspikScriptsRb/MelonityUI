@@ -69,6 +69,19 @@ function MUILib:CreateWindow(opts)
 	UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - start main.Position = UDim2.new(pPos.X.Scale, pPos.X.Offset + d.X, pPos.Y.Scale, pPos.Y.Offset + d.Y) end end)
 	UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
 
+	local visible = true
+	local function toggleVisible()
+		visible = not visible
+		tween(main, 0.25, {Size = visible and UDim2.fromOffset(980, 640) or UDim2.fromOffset(0, 0)})
+	end
+
+	UserInputService.InputBegan:Connect(function(input, gp)
+		if gp then return end
+		if input.KeyCode == Enum.KeyCode.Insert then
+			toggleVisible()
+		end
+	end)
+
 	local top = Instance.new("Frame")
 	top.Size = UDim2.new(1, 0, 0, 45)
 	top.BackgroundColor3 = Theme.TopBarBG
@@ -80,7 +93,6 @@ function MUILib:CreateWindow(opts)
 	logo.Position = UDim2.new(0, 15, 0.5, -12)
 	logo.BackgroundTransparency = 1
 	logo.Image = "rbxassetid://75683973301629"
-	logo.ImageColor3 = Theme.Accent
 	logo.Parent = top
 
 	local titleLabel = Instance.new("TextLabel")
@@ -113,6 +125,20 @@ function MUILib:CreateWindow(opts)
 	gInp.TextSize = 13
 	gInp.TextXAlignment = "Left"
 	gInp.Parent = searchH
+	gInp.ClearTextOnFocus = false
+	gInp.FocusLost:Connect(function()
+		local query = string.lower(gInp.Text) or ""
+		for _, tab in pairs(win.Tabs) do
+			for _, entry in pairs(tab.Window.SidebarEntries) do
+				local txt = string.lower(entry.Text) or ""
+				if query == "" or txt:find(query, 1, true) then
+					entry.Visible = true
+				else
+					entry.Visible = false
+				end
+			end
+		end
+	end)
 
 	local lang = Instance.new("TextLabel")
 	lang.Size = UDim2.new(0, 120, 1, 0)
@@ -164,10 +190,11 @@ function MUILib:CreateWindow(opts)
 	Instance.new("UIListLayout", ns).Padding = UDim.new(0, 2)
 
 	local prof = Instance.new("Frame")
-	prof.Size = UDim2.new(1, 0, 0, 60)
-	prof.Position = UDim2.new(0, 0, 1, -60)
+	prof.Size = UDim2.new(1, -4, 0, 60)
+	prof.Position = UDim2.new(0, 2, 1, -60)
 	prof.BackgroundColor3 = defaultTheme.SearchBackground
 	prof.Parent = sb
+	round(prof, 4)
 
 	local av = Instance.new("ImageLabel")
 	av.Size = UDim2.fromOffset(36, 36)
@@ -305,10 +332,11 @@ function MUILib:CreateWindow(opts)
 			sf.Parent = t.P
 			round(sf, 4)
 			local l = Instance.new("Frame")
-			l.Size = UDim2.new(0, 3, 0, 18)
+			l.Size = UDim2.new(0, 3, 1, -40)
 			l.Position = UDim2.new(0, 0, 0, 12)
 			l.BackgroundColor3 = Theme.Accent
 			l.Parent = sf
+			round(l, 2)
 			local lt = Instance.new("TextLabel")
 			lt.Text = title
 			lt.Size = UDim2.new(1, -20, 0, 40)
@@ -326,7 +354,7 @@ function MUILib:CreateWindow(opts)
 			c.BackgroundTransparency = 1
 			c.Parent = sf
 			local cl = Instance.new("UIListLayout")
-			cl.Padding = UDim.new(0, 10)
+			cl.Padding = UDim.new(0, 8)
 			cl.Parent = c
 
 			function sec:AddToggle(o)
@@ -669,7 +697,7 @@ function MUILib:Notify(opts)
 	screen.Parent = CoreGui
 
 	local frame = Instance.new("Frame")
-	frame.Size = UDim2.fromOffset(260, 70)
+	frame.Size = UDim2.fromOffset(280, 80)
 	frame.AnchorPoint = Vector2.new(1, 1)
 	frame.Position = UDim2.new(1, -20, 1, -20)
 	frame.BackgroundColor3 = defaultTheme.PanelBackground
@@ -682,9 +710,17 @@ function MUILib:Notify(opts)
 	stroke.Thickness = 1
 	stroke.Parent = frame
 
+	local logo = Instance.new("ImageLabel")
+	logo.Size = UDim2.fromOffset(32, 32)
+	logo.Position = UDim2.new(0, 10, 0, 10)
+	logo.BackgroundTransparency = 1
+	logo.Image = "rbxassetid://75683973301629"
+	logo.Parent = frame
+	round(logo, 16)
+
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -16, 0, 22)
-	titleLabel.Position = UDim2.new(0, 8, 0, 6)
+	titleLabel.Size = UDim2.new(1, -60, 0, 20)
+	titleLabel.Position = UDim2.new(0, 52, 0, 10)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Font = "GothamBold"
 	titleLabel.Text = title
@@ -694,8 +730,8 @@ function MUILib:Notify(opts)
 	titleLabel.Parent = frame
 
 	local textLabel = Instance.new("TextLabel")
-	textLabel.Size = UDim2.new(1, -16, 1, -28)
-	textLabel.Position = UDim2.new(0, 8, 0, 24)
+	textLabel.Size = UDim2.new(1, -60, 1, -48)
+	textLabel.Position = UDim2.new(0, 52, 0, 32)
 	textLabel.BackgroundTransparency = 1
 	textLabel.Font = "Gotham"
 	textLabel.TextWrapped = true
@@ -706,7 +742,25 @@ function MUILib:Notify(opts)
 	textLabel.TextYAlignment = "Top"
 	textLabel.Parent = frame
 
+	local progress = Instance.new("Frame")
+	progress.Size = UDim2.new(1, 0, 0, 3)
+	progress.Position = UDim2.new(0, 0, 1, -3)
+	progress.BackgroundColor3 = defaultTheme.Accent
+	progress.BorderSizePixel = 0
+	progress.Parent = frame
+	round(progress, 2)
+
 	tween(frame, 0.2, {Position = UDim2.new(1, -20, 1, -20)})
+
+	local elapsed = 0
+	local step = 0.03
+	task.spawn(function()
+		while elapsed < duration do
+			task.wait(step)
+			elapsed = elapsed + step
+			progress.Size = UDim2.new(1 - (elapsed / duration), 0, 0, 3)
+		end
+	end)
 
 	task.delay(duration, function()
 		tween(frame, 0.2, {Position = UDim2.new(1, -20, 1, 20)})
