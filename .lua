@@ -177,19 +177,7 @@ function MUILib:CreateWindow(opts)
 		visible = not visible
 		if visible then
 			tween(main, 0.3, {Size = UDim2.fromOffset(980, 640), BackgroundTransparency = 0})
-			for _, child in pairs(main:GetDescendants()) do
-				if child:IsA("GuiObject") then
-					local originalTransparency = child.BackgroundTransparency
-					child.BackgroundTransparency = 1
-					tween(child, 0.3, {BackgroundTransparency = originalTransparency})
-				end
-			end
 		else
-			for _, child in pairs(main:GetDescendants()) do
-				if child:IsA("GuiObject") then
-					tween(child, 0.3, {BackgroundTransparency = 1})
-				end
-			end
 			tween(main, 0.3, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
 		end
 	end
@@ -270,10 +258,11 @@ function MUILib:CreateWindow(opts)
 	lang.Parent = top
 
 	local th = Instance.new("Frame")
-	th.Size = UDim2.new(1, -8, 0, 40)
-	th.Position = UDim2.new(0, 4, 0, 45)
+	th.Size = UDim2.new(1, -16, 0, 36)
+	th.Position = UDim2.new(0, 8, 0, 49)
 	th.BackgroundColor3 = Theme.TopBarBG
 	th.Parent = main
+	round(th, 4)
 	local tl = Instance.new("UIListLayout")
 	tl.FillDirection = "Horizontal"
 	tl.Padding = UDim.new(0, 20)
