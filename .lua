@@ -172,13 +172,65 @@ function MUILib:CreateWindow(opts)
 	UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - start main.Position = UDim2.new(pPos.X.Scale, pPos.X.Offset + d.X, pPos.Y.Scale, pPos.Y.Offset + d.Y) end end)
 	UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
 
+	-- запоминаем исходную прозрачность, чтобы анимация не ломала цвета
+	local originalTransparency = {}
+
+	local function cacheGuiTransparency(root)
+		for _, obj in ipairs(root:GetDescendants()) do
+			if obj:IsA("GuiObject") then
+				local entry = originalTransparency[obj]
+				if not entry then
+					entry = {
+						bg = obj.BackgroundTransparency,
+						text = obj:IsA("TextLabel") or obj:IsA("TextButton") and obj.TextTransparency or nil,
+						image = obj:IsA("ImageLabel") or obj:IsA("ImageButton") and obj.ImageTransparency or nil,
+					}
+					originalTransparency[obj] = entry
+				end
+			end
+		end
+	end
+
+	local function tweenGuiVisibility(root, makeVisible)
+		cacheGuiTransparency(root)
+		for obj, entry in pairs(originalTransparency) do
+			if obj and obj.Parent then
+				if makeVisible then
+					if entry.bg ~= nil then tween(obj, 0.25, {BackgroundTransparency = entry.bg}) end
+					if entry.text ~= nil and (obj:IsA("TextLabel") or obj:IsA("TextButton")) then
+						tween(obj, 0.25, {TextTransparency = entry.text})
+					end
+					if entry.image ~= nil and (obj:IsA("ImageLabel") or obj:IsA("ImageButton")) then
+						tween(obj, 0.25, {ImageTransparency = entry.image})
+					end
+				else
+					if obj.BackgroundTransparency ~= nil then tween(obj, 0.25, {BackgroundTransparency = 1}) end
+					if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+						tween(obj, 0.25, {TextTransparency = 1})
+					end
+					if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+						tween(obj, 0.25, {ImageTransparency = 1})
+					end
+				end
+			end
+		end
+	end
+
 	local visible = true
 	local function toggleVisible()
 		visible = not visible
 		if visible then
+			main.Visible = true
+			main.BackgroundTransparency = 1
 			tween(main, 0.3, {Size = UDim2.fromOffset(980, 640), BackgroundTransparency = 0})
+			tweenGuiVisibility(main, true)
 		else
+			tweenGuiVisibility(main, false)
 			tween(main, 0.3, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
+			-- после анимации полностью скрываем, чтобы не оставались артефакты
+			task.delay(0.32, function()
+				main.Visible = false
+			end)
 		end
 	end
 
