@@ -1,5 +1,6 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
 local MUILib = {}
@@ -78,9 +79,20 @@ function MUILib:CreateWindow(opts)
 	logo.Size = UDim2.fromOffset(24, 24)
 	logo.Position = UDim2.new(0, 15, 0.5, -12)
 	logo.BackgroundTransparency = 1
-	logo.Image = "rbxassetid://13000639907"
+	logo.Image = "rbxassetid://75683973301629"
 	logo.ImageColor3 = Theme.Accent
 	logo.Parent = top
+
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.new(0, 200, 0, 24)
+	titleLabel.Position = UDim2.new(0, 50, 0.5, -12)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Text = (opts and opts.Title) or "Melonity"
+	titleLabel.Font = "GothamBold"
+	titleLabel.TextSize = 15
+	titleLabel.TextColor3 = Theme.Text
+	titleLabel.TextXAlignment = "Left"
+	titleLabel.Parent = top
 
 	local searchH = Instance.new("Frame")
 	searchH.Size = UDim2.fromOffset(380, 28)
@@ -113,8 +125,8 @@ function MUILib:CreateWindow(opts)
 	lang.Parent = top
 
 	local th = Instance.new("Frame")
-	th.Size = UDim2.new(1, 0, 0, 40)
-	th.Position = UDim2.new(0, 0, 0, 45)
+	th.Size = UDim2.new(1, -8, 0, 40)
+	th.Position = UDim2.new(0, 4, 0, 45)
 	th.BackgroundColor3 = Theme.TopBarBG
 	th.Parent = main
 	local tl = Instance.new("UIListLayout")
@@ -129,6 +141,7 @@ function MUILib:CreateWindow(opts)
 	sb.Position = UDim2.new(0, 0, 0, 85)
 	sb.BackgroundColor3 = Theme.SidebarBG
 	sb.Parent = main
+	round(sb, 4)
 
 	local navT = Instance.new("TextLabel")
 	navT.Text = "Навигация"
@@ -159,12 +172,13 @@ function MUILib:CreateWindow(opts)
 	local av = Instance.new("ImageLabel")
 	av.Size = UDim2.fromOffset(36, 36)
 	av.Position = UDim2.new(0, 15, 0.5, -18)
+	av.BackgroundTransparency = 1
 	av.Image = "rbxassetid://13000639907"
 	av.Parent = prof
 	round(av, 18)
 
 	local uN = Instance.new("TextLabel")
-	uN.Text = "Naeldin#306783"
+	uN.Text = (Players.LocalPlayer and Players.LocalPlayer.Name) or "Player"
 	uN.Size = UDim2.new(1, -65, 0, 15)
 	uN.Position = UDim2.new(0, 60, 0.5, -10)
 	uN.BackgroundTransparency = 1
@@ -173,6 +187,16 @@ function MUILib:CreateWindow(opts)
 	uN.TextSize = 13
 	uN.TextXAlignment = "Left"
 	uN.Parent = prof
+
+	local lp = Players.LocalPlayer
+	if lp then
+		local ok, thumb = pcall(function()
+			return Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+		end)
+		if ok and thumb then
+			av.Image = thumb
+		end
+	end
 
 	local ct = Instance.new("Frame")
 	ct.Size = UDim2.new(1, -220, 1, -85)
@@ -340,6 +364,15 @@ function MUILib:CreateWindow(opts)
 				end
 				bg.MouseButton1Click:Connect(function() state = not state update() end)
 				update()
+				return {
+					Set = function(v)
+						state = v and true or false
+						update()
+					end,
+					Get = function()
+						return state
+					end,
+				}
 			end
 
 			function sec:AddItemToggle(o)
@@ -367,12 +400,28 @@ function MUILib:CreateWindow(opts)
 				img.BackgroundTransparency = 1
 				img.Image = o.Icon or ""
 				img.Parent = b
-				local state = false
-				b.MouseButton1Click:Connect(function()
-					state = not state
+				local state = o.Default or false
+
+				local function apply()
 					tween(s, 0.2, {Color = state and Theme.ToggleOn or Theme.ToggleOff})
 					if o.Callback then o.Callback(state) end
+				end
+
+				b.MouseButton1Click:Connect(function()
+					state = not state
+					apply()
 				end)
+
+				apply()
+				return {
+					Set = function(v)
+						state = v and true or false
+						apply()
+					end,
+					Get = function()
+						return state
+					end,
+				}
 			end
 
 			function sec:AddLabel(o)
@@ -556,6 +605,7 @@ function MUILib:CreateWindow(opts)
 					a = math.clamp(a, 0, 1)
 					local v = min + (max - min) * a
 					v = math.floor(v + 0.5)
+					value = v
 					fill.Size = UDim2.new(a, 0, 1, 0)
 					h.Position = UDim2.new(a, 0, 0.5, 0)
 					vL.Text = tostring(v)
@@ -587,6 +637,16 @@ function MUILib:CreateWindow(opts)
 				UserInputService.InputChanged:Connect(function(i)
 					if drag and i.UserInputType == Enum.UserInputType.MouseMovement then up(i) end
 				end)
+				return {
+					Set = function(v)
+						v = math.clamp(v, min, max)
+						local a = (v - min) / (max - min)
+						setFromAlpha(a)
+					end,
+					Get = function()
+						return value
+					end,
+				}
 			end
 
 			return sec
@@ -595,4 +655,67 @@ function MUILib:CreateWindow(opts)
 	end
 	return win
 end
+
+function MUILib:Notify(opts)
+	opts = opts or {}
+	local title = opts.Title or "Melonity"
+	local text = opts.Text or "Notification"
+	local duration = opts.Duration or 3
+
+	local screen = Instance.new("ScreenGui")
+	screen.Name = "MelonityNotify"
+	screen.ResetOnSpawn = false
+	screen.ZIndexBehavior = Enum.ZIndexBehavior.Global
+	screen.Parent = CoreGui
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.fromOffset(260, 70)
+	frame.AnchorPoint = Vector2.new(1, 1)
+	frame.Position = UDim2.new(1, -20, 1, -20)
+	frame.BackgroundColor3 = defaultTheme.PanelBackground
+	frame.BorderSizePixel = 0
+	frame.Parent = screen
+	round(frame, 6)
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = defaultTheme.Accent
+	stroke.Thickness = 1
+	stroke.Parent = frame
+
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.new(1, -16, 0, 22)
+	titleLabel.Position = UDim2.new(0, 8, 0, 6)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Font = "GothamBold"
+	titleLabel.Text = title
+	titleLabel.TextSize = 14
+	titleLabel.TextColor3 = defaultTheme.TextPrimary
+	titleLabel.TextXAlignment = "Left"
+	titleLabel.Parent = frame
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Size = UDim2.new(1, -16, 1, -28)
+	textLabel.Position = UDim2.new(0, 8, 0, 24)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Font = "Gotham"
+	textLabel.TextWrapped = true
+	textLabel.Text = text
+	textLabel.TextSize = 12
+	textLabel.TextColor3 = defaultTheme.TextSecondary
+	textLabel.TextXAlignment = "Left"
+	textLabel.TextYAlignment = "Top"
+	textLabel.Parent = frame
+
+	tween(frame, 0.2, {Position = UDim2.new(1, -20, 1, -20)})
+
+	task.delay(duration, function()
+		tween(frame, 0.2, {Position = UDim2.new(1, -20, 1, 20)})
+		task.delay(0.25, function()
+			if screen then
+				screen:Destroy()
+			end
+		end)
+	end)
+end
+
 return MUILib
