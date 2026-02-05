@@ -6,14 +6,14 @@ local MUILib = {}
 MUILib.__index = MUILib
 
 local defaultTheme = {
-	Background = Color3.fromRGB(24, 26, 34),
-	NavBackground = Color3.fromRGB(30, 32, 42),
-	PanelBackground = Color3.fromRGB(36, 38, 50),
+	Background = Color3.fromRGB(40, 42, 54),
+	NavBackground = Color3.fromRGB(46, 48, 60),
+	PanelBackground = Color3.fromRGB(52, 54, 70),
 	PanelBorder = Color3.fromRGB(255, 80, 150),
 	Accent = Color3.fromRGB(255, 80, 150),
 	TextPrimary = Color3.fromRGB(245, 246, 255),
 	TextSecondary = Color3.fromRGB(185, 190, 205),
-	SearchBackground = Color3.fromRGB(32, 34, 44),
+	SearchBackground = Color3.fromRGB(38, 40, 52),
 }
 
 local Theme = {
@@ -49,7 +49,7 @@ local function addStroke(p, c, t)
 end
 
 function MUILib:CreateWindow(opts)
-	local win = {Tabs = {}, SidebarEntries = {}, CurrentTab = nil}
+	local win = {Tabs = {}, SidebarEntries = {}, CurrentTab = nil, CurrentSideEntry = nil}
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "MelonityUI"
 	screen.Parent = CoreGui
@@ -222,13 +222,53 @@ function MUILib:CreateWindow(opts)
 			e.TextXAlignment = "Left"
 			e.Parent = ns
 			local ind = Instance.new("Frame")
-			ind.Size = UDim2.fromOffset(4, 4)
-			ind.Position = UDim2.new(0, 15, 0.5, -2)
-			ind.BackgroundColor3 = Theme.TextGray
+			ind.Size = UDim2.new(0, 3, 0, 18)
+			ind.Position = UDim2.new(0, 8, 0.5, -9)
+			ind.BackgroundColor3 = Theme.Accent
+			ind.BackgroundTransparency = 1
 			ind.Parent = e
 			round(ind, 2)
-			e.MouseEnter:Connect(function() tween(e, 0.2, {TextColor3 = Theme.Text}) tween(ind, 0.2, {BackgroundColor3 = Theme.Accent}) end)
-			e.MouseLeave:Connect(function() tween(e, 0.2, {TextColor3 = Theme.TextGray}) tween(ind, 0.2, {BackgroundColor3 = Theme.TextGray}) end)
+
+			local function setSelected(sel)
+				if sel then
+					e.TextColor3 = Theme.Text
+					ind.BackgroundTransparency = 0
+				else
+					e.TextColor3 = Theme.TextGray
+					ind.BackgroundTransparency = 1
+				end
+			end
+
+			e.MouseEnter:Connect(function()
+				if win.CurrentSideEntry ~= e then
+					tween(e, 0.15, {TextColor3 = Theme.Text})
+				end
+			end)
+
+			e.MouseLeave:Connect(function()
+				if win.CurrentSideEntry ~= e then
+					tween(e, 0.15, {TextColor3 = Theme.TextGray})
+				end
+			end)
+
+			e.MouseButton1Click:Connect(function()
+				if win.CurrentSideEntry and win.CurrentSideEntry ~= e then
+					local oldInd = win.CurrentSideEntry:FindFirstChildOfClass("Frame")
+					if oldInd then
+						oldInd.BackgroundTransparency = 1
+					end
+					win.CurrentSideEntry.TextColor3 = Theme.TextGray
+				end
+				win.CurrentSideEntry = e
+				setSelected(true)
+			end)
+
+			-- первый элемент сразу выбран
+			if not win.CurrentSideEntry then
+				win.CurrentSideEntry = e
+				setSelected(true)
+			end
+
 			return e
 		end
 
@@ -335,13 +375,145 @@ function MUILib:CreateWindow(opts)
 				end)
 			end
 
+			function sec:AddLabel(o)
+				o = o or {}
+				local text = o.Text or "Label"
+				local bold = o.Bold or false
+				local label = Instance.new("TextLabel")
+				label.Name = "Label"
+				label.Size = UDim2.new(1, 0, 0, 20)
+				label.BackgroundTransparency = 1
+				label.Text = text
+				label.TextSize = 13
+				label.TextXAlignment = "Left"
+				label.Font = bold and "GothamBold" or "Gotham"
+				label.TextColor3 = bold and Theme.Text or Theme.TextGray
+				label.Parent = c
+				return label
+			end
+
+			function sec:AddParagraph(o)
+				o = o or {}
+				local text = o.Text or "Paragraph"
+				local label = Instance.new("TextLabel")
+				label.Name = "Paragraph"
+				label.Size = UDim2.new(1, 0, 0, 0)
+				label.AutomaticSize = "Y"
+				label.BackgroundTransparency = 1
+				label.TextWrapped = true
+				label.Text = text
+				label.TextSize = 12
+				label.TextXAlignment = "Left"
+				label.TextYAlignment = "Top"
+				label.Font = "Gotham"
+				label.TextColor3 = Theme.TextGray
+				label.Parent = c
+				return label
+			end
+
+			function sec:AddButton(o)
+				o = o or {}
+				local text = o.Text or "Button"
+				local callback = o.Callback or function() end
+				local button = Instance.new("TextButton")
+				button.Name = "Button"
+				button.Size = UDim2.new(0, 120, 0, 26)
+				button.BackgroundColor3 = defaultTheme.SearchBackground
+				button.Text = text
+				button.TextSize = 13
+				button.Font = "GothamSemibold"
+				button.TextColor3 = Theme.Text
+				button.AutoButtonColor = false
+				button.Parent = c
+				round(button, 4)
+				button.MouseEnter:Connect(function()
+					tween(button, 0.12, {BackgroundColor3 = Theme.PanelBG})
+				end)
+				button.MouseLeave:Connect(function()
+					tween(button, 0.12, {BackgroundColor3 = defaultTheme.SearchBackground})
+				end)
+				button.MouseButton1Click:Connect(callback)
+				return button
+			end
+
+			function sec:AddBind(o)
+				o = o or {}
+				local text = o.Text or "Bind"
+				local key = o.DefaultKey or Enum.KeyCode.F
+				local callback = o.Callback or function() end
+
+				local row = Instance.new("Frame")
+				row.Size = UDim2.new(1, 0, 0, 26)
+				row.BackgroundTransparency = 1
+				row.Parent = c
+
+				local label = Instance.new("TextLabel")
+				label.Size = UDim2.new(1, -80, 1, 0)
+				label.BackgroundTransparency = 1
+				label.Text = text
+				label.TextSize = 13
+				label.TextXAlignment = "Left"
+				label.Font = "Gotham"
+				label.TextColor3 = Theme.Text
+				label.Parent = row
+
+				local btn = Instance.new("TextButton")
+				btn.Size = UDim2.new(0, 70, 0, 20)
+				btn.Position = UDim2.new(1, -70, 0.5, -10)
+				btn.BackgroundColor3 = defaultTheme.SearchBackground
+				btn.AutoButtonColor = false
+				btn.Font = "Gotham"
+				btn.TextSize = 12
+				btn.TextColor3 = Theme.Text
+				btn.Text = key.Name
+				btn.Parent = row
+				round(btn, 4)
+
+				local capturing = false
+
+				btn.MouseButton1Click:Connect(function()
+					if capturing then return end
+					capturing = true
+					btn.Text = "..."
+					local conn
+					conn = UserInputService.InputBegan:Connect(function(input, gp)
+						if gp then return end
+						if input.KeyCode ~= Enum.KeyCode.Unknown then
+							key = input.KeyCode
+							btn.Text = key.Name
+							capturing = false
+							conn:Disconnect()
+						end
+					end)
+				end)
+
+				UserInputService.InputBegan:Connect(function(input, gp)
+					if gp then return end
+					if input.KeyCode == key then
+						callback()
+					end
+				end)
+
+				return {
+					GetKey = function() return key end,
+					SetKey = function(k) key = k btn.Text = key.Name end,
+				}
+			end
+
 			function sec:AddSlider(o)
+				o = o or {}
+				local min = typeof(o.Min) == "number" and o.Min or 0
+				local max = typeof(o.Max) == "number" and o.Max or 100
+				if max <= min then max = min + 1 end
+				local value = typeof(o.Default) == "number" and o.Default or min
+				value = math.clamp(value, min, max)
+
 				local r = Instance.new("Frame")
 				r.Size = UDim2.new(1, 0, 0, 40)
 				r.BackgroundTransparency = 1
 				r.Parent = c
 				local tl = Instance.new("TextLabel")
-				tl.Text = o.Text
+				tl.Text = o.Text or "Slider"
 				tl.Size = UDim2.new(1, 0, 0, 15)
 				tl.BackgroundTransparency = 1
 				tl.TextColor3 = Theme.Text
@@ -350,7 +522,7 @@ function MUILib:CreateWindow(opts)
 				tl.TextXAlignment = "Left"
 				tl.Parent = r
 				local vL = Instance.new("TextLabel")
-				vL.Text = tostring(o.Default or o.Min)
+				vL.Text = tostring(value)
 				vL.Size = UDim2.new(0, 40, 0, 20)
 				vL.Position = UDim2.new(1, -40, 0.5, 0)
 				vL.BackgroundColor3 = Theme.MainBG
@@ -366,29 +538,55 @@ function MUILib:CreateWindow(opts)
 				bar.Parent = r
 				round(bar, 2)
 				local fill = Instance.new("Frame")
-				fill.Size = UDim2.new((o.Default-o.Min)/(o.Max-o.Min), 0, 1, 0)
+				local startAlpha = (value - min) / (max - min)
+				fill.Size = UDim2.new(startAlpha, 0, 1, 0)
 				fill.BackgroundColor3 = Theme.Accent
 				fill.Parent = bar
 				round(fill, 2)
 				local h = Instance.new("Frame")
 				h.Size = UDim2.fromOffset(12, 12)
 				h.AnchorPoint = Vector2.new(0.5, 0.5)
-				h.Position = UDim2.new(fill.Size.X.Scale, 0, 0.5, 0)
+				h.Position = UDim2.new(startAlpha, 0, 0.5, 0)
 				h.BackgroundColor3 = Theme.Text
 				h.Parent = bar
 				round(h, 6)
 				local drag = false
-				local function up(i)
-					local p = math.clamp((i.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
-					local v = math.floor(o.Min + (o.Max - o.Min) * p)
-					fill.Size = UDim2.new(p, 0, 1, 0)
-					h.Position = UDim2.new(p, 0, 0.5, 0)
-					vL.Text = v
+
+				local function setFromAlpha(a)
+					a = math.clamp(a, 0, 1)
+					local v = min + (max - min) * a
+					v = math.floor(v + 0.5)
+					fill.Size = UDim2.new(a, 0, 1, 0)
+					h.Position = UDim2.new(a, 0, 0.5, 0)
+					vL.Text = tostring(v)
 					if o.Callback then o.Callback(v) end
 				end
-				h.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true end end)
-				UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
-				UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then up(i) end end)
+
+				local function up(i)
+					local p = math.clamp((i.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+					setFromAlpha(p)
+				end
+
+				h.InputBegan:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.MouseButton1 then
+						drag = true
+						-- отключаем скролл таба пока двигаем слайдер
+						if t.P and t.P:IsA("ScrollingFrame") then
+							t.P.ScrollingEnabled = false
+						end
+					end
+				end)
+				UserInputService.InputEnded:Connect(function(i)
+					if i.UserInputType == Enum.UserInputType.MouseButton1 then
+						drag = false
+						if t.P and t.P:IsA("ScrollingFrame") then
+							t.P.ScrollingEnabled = true
+						end
+					end
+				end)
+				UserInputService.InputChanged:Connect(function(i)
+					if drag and i.UserInputType == Enum.UserInputType.MouseMovement then up(i) end
+				end)
 			end
 
 			return sec
