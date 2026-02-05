@@ -1,767 +1,477 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-
-local MUILib = {}
-MUILib.__index = MUILib
-_G.MUILib = MUILib
-
-local function tween(o, info, props)
-	if not o then
-		return
-	end
-	local t = TweenService:Create(o, info, props)
-	t:Play()
-	return t
-end
-
-local function createRound(parent, radius)
-	local c = Instance.new("UICorner")
-	c.CornerRadius = UDim.new(0, radius)
-	c.Parent = parent
-	return c
-end
-
-local defaultTheme = {
-	Background = Color3.fromRGB(18, 20, 28),
-	NavBackground = Color3.fromRGB(24, 26, 35),
-	PanelBackground = Color3.fromRGB(30, 32, 42),
-	PanelBorder = Color3.fromRGB(138, 178, 255),
-	Accent = Color3.fromRGB(255, 73, 130),
-	TextPrimary = Color3.fromRGB(235, 238, 255),
-	TextSecondary = Color3.fromRGB(160, 170, 190),
-	SearchBackground = Color3.fromRGB(26, 28, 38),
+local CoreGui = game:GetService("CoreGui")
+local MUILib = {
+    Language = "RU",
+    Labels = {},
+    SidebarEntries = {},
+    Tabs = {}
 }
-
-local WINDOW_SIZE = UDim2.fromOffset(960, 560)
-
----------------------------------------------------------------------
--- WINDOW
----------------------------------------------------------------------
-
+MUILib.__index = MUILib
+local Theme = {
+    MainBG = Color3.fromRGB(24, 25, 33),
+    SidebarBG = Color3.fromRGB(18, 19, 25),
+    TopBarBG = Color3.fromRGB(20, 21, 28),
+    PanelBG = Color3.fromRGB(30, 31, 40),
+    Accent = Color3.fromRGB(255, 46, 105),
+    ToggleOn = Color3.fromRGB(46, 255, 113),
+    ToggleOff = Color3.fromRGB(255, 46, 69),
+    Text = Color3.fromRGB(255, 255, 255),
+    TextGray = Color3.fromRGB(130, 132, 142),
+    SearchBG = Color3.fromRGB(15, 16, 22),
+    Border = Color3.fromRGB(45, 46, 55)
+}
+local function tween(o, t, p)
+    TweenService:Create(o, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), p):Play()
+end
+local function round(p, r)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, r)
+    c.Parent = p
+end
+local function stroke(p, c, t)
+    local s = Instance.new("UIStroke")
+    s.Color = c
+    s.Thickness = t
+    s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    s.Parent = p
+    return s
+end
+function MUILib:SetLanguage(lang)
+    self.Language = lang
+    for _, data in pairs(self.Labels) do
+        data.Obj.Text = data.Langs[lang] or data.Obj.Text
+    end
+end
+function MUILib:RegisterLabel(obj, langTable)
+    table.insert(self.Labels, {Obj = obj, Langs = langTable})
+    obj.Text = langTable[self.Language]
+end
 function MUILib:CreateWindow(opts)
-	opts = opts or {}
-	local title = opts.Title or "M-UI"
-
-	-- локализация
-	local localized = {}
-	local currentLang = "en"
-
-	local function applyOne(obj)
-		local info = localized[obj]
-		if not info then
-			return
-		end
-		local texts = info.Texts
-		local upper = info.Upper
-		local txt = texts[currentLang] or texts.en or texts.ru
-		if not txt and next(texts) then
-			local _, any = next(texts)
-			txt = any
-		end
-		if type(txt) ~= "string" then
-			return
-		end
-		if upper then
-			txt = txt:upper()
-		end
-		obj.Text = txt
-	end
-
-	local function registerLabel(obj, texts, upper)
-		if type(texts) ~= "table" then
-			if type(texts) == "string" then
-				obj.Text = upper and texts:upper() or texts
-			end
-			return
-		end
-		localized[obj] = {
-			Texts = texts,
-			Upper = upper and true or false,
-		}
-		applyOne(obj)
-	end
-
-	local function applyLanguage()
-		for obj in pairs(localized) do
-			if obj and obj.Parent then
-				applyOne(obj)
-			end
-		end
-	end
-
-	local screen = Instance.new("ScreenGui")
-	screen.Name = opts.Name or "MUILibrary"
-	screen.ResetOnSpawn = false
-	screen.ZIndexBehavior = Enum.ZIndexBehavior.Global
-	screen.Parent = game:GetService("CoreGui")
-
-	local root = Instance.new("Frame")
-	root.Name = "Root"
-	root.Size = WINDOW_SIZE
-	root.AnchorPoint = Vector2.new(0.5, 0.5)
-	root.Position = UDim2.new(0.5, 0, 0.5, 0)
-	root.BackgroundColor3 = defaultTheme.Background
-	root.BorderSizePixel = 0
-	root.Active = true
-	root.ClipsDescendants = true
-	root.Parent = screen
-	createRound(root, 10)
-
-	local rootStroke = Instance.new("UIStroke")
-	rootStroke.Color = Color3.fromRGB(40, 42, 55)
-	rootStroke.Thickness = 1
-	rootStroke.Parent = root
-
-	-- drag
-	local dragging, dragStart, startPos
-	root.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragStart = input.Position
-			startPos = root.Position
-		end
-	end)
-	root.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = false
-		end
-	end)
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-			local delta = input.Position - dragStart
-			root.Position = UDim2.new(
-				startPos.X.Scale,
-				startPos.X.Offset + delta.X,
-				startPos.Y.Scale,
-				startPos.Y.Offset + delta.Y
-			)
-		end
-	end)
-
-	-----------------------------------------------------------------
-	-- TOP BAR
-	-----------------------------------------------------------------
-	local topBar = Instance.new("Frame")
-	topBar.Name = "TopBar"
-	topBar.Size = UDim2.new(1, 0, 0, 44)
-	topBar.BackgroundColor3 = defaultTheme.NavBackground
-	topBar.BorderSizePixel = 0
-	topBar.Parent = root
-
-	local topStroke = Instance.new("UIStroke")
-	topStroke.Color = Color3.fromRGB(50, 54, 70)
-	topStroke.Thickness = 1
-	topStroke.Parent = topBar
-
-	local topLayout = Instance.new("UIListLayout")
-	topLayout.FillDirection = Enum.FillDirection.Horizontal
-	topLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-	topLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-	topLayout.Padding = UDim.new(0, 8)
-	topLayout.Parent = topBar
-
-	local leftContainer = Instance.new("Frame")
-	leftContainer.Size = UDim2.new(0, 220, 1, 0)
-	leftContainer.BackgroundTransparency = 1
-	leftContainer.Parent = topBar
-
-	local midContainer = Instance.new("Frame")
-	midContainer.Size = UDim2.new(1, -420, 1, 0)
-	midContainer.BackgroundTransparency = 1
-	midContainer.Parent = topBar
-
-	local rightContainer = Instance.new("Frame")
-	rightContainer.Size = UDim2.new(0, 200, 1, 0)
-	rightContainer.BackgroundTransparency = 1
-	rightContainer.Parent = topBar
-
-	-----------------------------------------------------------------
-	-- ICON + TITLE (LEFT)
-	-----------------------------------------------------------------
-	local icon = Instance.new("ImageLabel")
-	icon.Name = "Logo"
-	icon.Size = UDim2.fromOffset(28, 28)
-	icon.Position = UDim2.new(0, 12, 0.5, -14)
-	icon.BackgroundTransparency = 1
-	icon.Image = "rbxassetid://75683973301629"
-	icon.Parent = leftContainer
-
-	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Name = "Title"
-	titleLabel.AnchorPoint = Vector2.new(0, 0.5)
-	titleLabel.Position = UDim2.new(0, 50, 0.5, 0)
-	titleLabel.Size = UDim2.new(1, -60, 0, 22)
-	titleLabel.BackgroundTransparency = 1
-	titleLabel.Font = Enum.Font.GothamBold
-	titleLabel.Text = title
-	titleLabel.TextColor3 = defaultTheme.TextPrimary
-	titleLabel.TextSize = 16
-	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-	titleLabel.Parent = leftContainer
-
-	-----------------------------------------------------------------
-	-- SEARCH (CENTER)
-	-----------------------------------------------------------------
-	local searchHolder = Instance.new("Frame")
-	searchHolder.AnchorPoint = Vector2.new(0.5, 0.5)
-	searchHolder.Position = UDim2.new(0.5, 0, 0.5, 0)
-	searchHolder.Size = UDim2.new(0.85, 0, 0, 30)
-	searchHolder.BackgroundColor3 = defaultTheme.SearchBackground
-	searchHolder.BorderSizePixel = 0
-	searchHolder.Parent = midContainer
-	createRound(searchHolder, 8)
-
-	local searchStroke = Instance.new("UIStroke")
-	searchStroke.Color = Color3.fromRGB(55, 60, 80)
-	searchStroke.Thickness = 1
-	searchStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	searchStroke.Parent = searchHolder
-
-	local searchIcon = Instance.new("ImageLabel")
-	searchIcon.Size = UDim2.fromOffset(18, 18)
-	searchIcon.Position = UDim2.new(0, 10, 0.5, -9)
-	searchIcon.BackgroundTransparency = 1
-	searchIcon.Image = "rbxassetid://15999597350"
-	searchIcon.ImageTransparency = 0.35
-	searchIcon.Parent = searchHolder
-
-	local searchBox = Instance.new("TextBox")
-	searchBox.Name = "SearchBox"
-	searchBox.Size = UDim2.new(1, -40, 1, 0)
-	searchBox.Position = UDim2.new(0, 36, 0, 0)
-	searchBox.BackgroundTransparency = 1
-	searchBox.Font = Enum.Font.Gotham
-	searchBox.PlaceholderText = "Search"
-	searchBox.PlaceholderColor3 = defaultTheme.TextSecondary
-	searchBox.Text = ""
-	searchBox.TextColor3 = defaultTheme.TextPrimary
-	searchBox.TextSize = 14
-	searchBox.TextXAlignment = Enum.TextXAlignment.Left
-	searchBox.ClearTextOnFocus = false
-	searchBox.Parent = searchHolder
-
-	-----------------------------------------------------------------
-	-- LANGUAGE DROPDOWN (RIGHT)
-	-----------------------------------------------------------------
-	local langButton = Instance.new("TextButton")
-	langButton.Name = "LanguageButton"
-	langButton.AnchorPoint = Vector2.new(1, 0.5)
-	langButton.Position = UDim2.new(1, -10, 0.5, 0)
-	langButton.Size = UDim2.new(0, 110, 0, 26)
-	langButton.BackgroundColor3 = defaultTheme.SearchBackground
-	langButton.AutoButtonColor = false
-	langButton.Text = "English"
-	langButton.Font = Enum.Font.Gotham
-	langButton.TextSize = 13
-	langButton.TextColor3 = defaultTheme.TextPrimary
-	langButton.TextXAlignment = Enum.TextXAlignment.Center
-	langButton.Parent = rightContainer
-	createRound(langButton, 8)
-
-	local dropIcon = Instance.new("ImageLabel")
-	dropIcon.Size = UDim2.fromOffset(12, 12)
-	dropIcon.AnchorPoint = Vector2.new(1, 0.5)
-	dropIcon.Position = UDim2.new(1, -8, 0.5, 0)
-	dropIcon.BackgroundTransparency = 1
-	dropIcon.Image = "rbxassetid://6031090990"
-	dropIcon.ImageColor3 = defaultTheme.TextSecondary
-	dropIcon.Parent = langButton
-
-	local langMenu = Instance.new("Frame")
-	langMenu.Name = "LangMenu"
-	langMenu.Visible = false
-	langMenu.Size = UDim2.new(0, 110, 0, 56)
-	langMenu.Position = UDim2.new(1, -10, 0, 40)
-	langMenu.BackgroundColor3 = defaultTheme.NavBackground
-	langMenu.BorderSizePixel = 0
-	langMenu.Parent = rightContainer
-	createRound(langMenu, 8)
-
-	local lmStroke = Instance.new("UIStroke")
-	lmStroke.Color = Color3.fromRGB(55, 60, 80)
-	lmStroke.Thickness = 1
-	lmStroke.Parent = langMenu
-
-	local function createLangOption(text, order)
-		local btn = Instance.new("TextButton")
-		btn.Size = UDim2.new(1, 0, 0.5, 0)
-		btn.Position = UDim2.new(0, 0, (order - 1) * 0.5, 0)
-		btn.BackgroundTransparency = 1
-		btn.Text = text
-		btn.Font = Enum.Font.Gotham
-		btn.TextSize = 13
-		btn.TextColor3 = defaultTheme.TextSecondary
-		btn.AutoButtonColor = false
-		btn.Parent = langMenu
-
-		btn.MouseEnter:Connect(function()
-			tween(btn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				TextColor3 = defaultTheme.TextPrimary
-			})
-		end)
-		btn.MouseLeave:Connect(function()
-			tween(btn, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				TextColor3 = defaultTheme.TextSecondary
-			})
-		end)
-
-		return btn
-	end
-
-	local ruBtn = createLangOption("Русский", 1)
-	local enBtn = createLangOption("English", 2)
-
-	local function setLang(code)
-		currentLang = code
-		if code == "ru" then
-			langButton.Text = "Русский"
-		else
-			langButton.Text = "English"
-		end
-		applyLanguage()
-	end
-
-	langButton.MouseButton1Click:Connect(function()
-		langMenu.Visible = not langMenu.Visible
-		langMenu.ClipsDescendants = true
-
-		if langMenu.Visible then
-			langMenu.Size = UDim2.new(0, 110, 0, 0)
-			tween(langMenu, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Size = UDim2.new(0, 110, 0, 56)
-			})
-			tween(dropIcon, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Rotation = 180
-			})
-		else
-			tween(dropIcon, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Rotation = 0
-			})
-		end
-	end)
-
-	ruBtn.MouseButton1Click:Connect(function()
-		setLang("ru")
-		langMenu.Visible = false
-	end)
-	enBtn.MouseButton1Click:Connect(function()
-		setLang("en")
-		langMenu.Visible = false
-	end)
-
-	-----------------------------------------------------------------
-	-- TOP TABS BAR
-	-----------------------------------------------------------------
-	local topTabs = Instance.new("Frame")
-	topTabs.Name = "TopTabs"
-	topTabs.Size = UDim2.new(1, 0, 0, 34)
-	topTabs.Position = UDim2.new(0, 0, 0, 44)
-	topTabs.BackgroundColor3 = defaultTheme.NavBackground
-	topTabs.BorderSizePixel = 0
-	topTabs.Parent = root
-
-	local tabsLayout = Instance.new("UIListLayout")
-	tabsLayout.FillDirection = Enum.FillDirection.Horizontal
-	tabsLayout.Padding = UDim.new(0, 12)
-	tabsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-	tabsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-	tabsLayout.Parent = topTabs
-
-	local tabsPadding = Instance.new("UIPadding")
-	tabsPadding.PaddingLeft = UDim.new(0, 16)
-	tabsPadding.Parent = topTabs
-
-	-----------------------------------------------------------------
-	-- MAIN CONTENT AREA
-	-----------------------------------------------------------------
-	local content = Instance.new("Frame")
-	content.Name = "Content"
-	content.Size = UDim2.new(1, -16, 1, -44 - 34 - 12)
-	content.Position = UDim2.new(0, 8, 0, 44 + 34 + 8)
-	content.BackgroundColor3 = defaultTheme.Background
-	content.BorderSizePixel = 0
-	content.Parent = root
-
-	local contentLayout = Instance.new("UIListLayout")
-	contentLayout.FillDirection = Enum.FillDirection.Horizontal
-	contentLayout.Padding = UDim.new(0, 8)
-	contentLayout.Parent = content
-
-	-----------------------------------------------------------------
-	-- LEFT NAV PANEL
-	-----------------------------------------------------------------
-	local navPanel = Instance.new("Frame")
-	navPanel.Name = "NavPanel"
-	navPanel.Size = UDim2.new(0, 220, 1, 0)
-	navPanel.BackgroundColor3 = defaultTheme.NavBackground
-	navPanel.BorderSizePixel = 0
-	navPanel.Parent = content
-	createRound(navPanel, 8)
-
-	local navStroke = Instance.new("UIStroke")
-	navStroke.Color = Color3.fromRGB(36, 40, 54)
-	navStroke.Thickness = 1
-	navStroke.Parent = navPanel
-
-	local navTitle = Instance.new("TextLabel")
-	navTitle.Size = UDim2.new(1, -20, 0, 24)
-	navTitle.Position = UDim2.new(0, 10, 0, 6)
-	navTitle.BackgroundTransparency = 1
-	navTitle.Font = Enum.Font.GothamSemibold
-	navTitle.Text = "Навигация"
-	navTitle.TextSize = 14
-	navTitle.TextXAlignment = Enum.TextXAlignment.Left
-	navTitle.TextColor3 = defaultTheme.TextSecondary
-	navTitle.Parent = navPanel
-
-	-- регистрируем для смены языка
-	registerLabel(navTitle, {
-		ru = "Навигация",
-		en = "Navigation",
-	}, false)
-
-	local navSearch = searchHolder:Clone()
-	navSearch.Parent = navPanel
-	navSearch.Position = UDim2.new(0, 10, 0, 32)
-	navSearch.Size = UDim2.new(1, -20, 0, 26)
-	navSearch.SearchBox.PlaceholderText = "Search"
-
-	local navListHolder = Instance.new("Frame")
-	navListHolder.Size = UDim2.new(1, -8, 1, -70)
-	navListHolder.Position = UDim2.new(0, 4, 0, 64)
-	navListHolder.BackgroundTransparency = 1
-	navListHolder.Parent = navPanel
-
-	local navScroll = Instance.new("ScrollingFrame")
-	navScroll.Size = UDim2.new(1, -4, 1, 0)
-	navScroll.Position = UDim2.new(0, 2, 0, 0)
-	navScroll.BackgroundTransparency = 1
-	navScroll.BorderSizePixel = 0
-	navScroll.ScrollBarImageColor3 = Color3.fromRGB(60, 64, 80)
-	navScroll.ScrollBarThickness = 4
-	navScroll.Parent = navListHolder
-
-	local navScrollLayout = Instance.new("UIListLayout")
-	navScrollLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	navScrollLayout.Padding = UDim.new(0, 2)
-	navScrollLayout.Parent = navScroll
-
-	-- поиск по левому списку
-	navSearch.SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
-		local q = navSearch.SearchBox.Text:lower()
-		for _, child in ipairs(navScroll:GetChildren()) do
-			if child:IsA("TextButton") then
-				local txt = child.Text or ""
-				child.Visible = txt:lower():find(q, 1, true) ~= nil
-			end
-		end
-	end)
-
-	-----------------------------------------------------------------
-	-- RIGHT CONTENT CONTAINER
-	-----------------------------------------------------------------
-	local rightContainerMain = Instance.new("Frame")
-	rightContainerMain.Name = "RightContainer"
-	rightContainerMain.Size = UDim2.new(1, -228, 1, 0)
-	rightContainerMain.BackgroundTransparency = 1
-	rightContainerMain.Parent = content
-
-	-----------------------------------------------------------------
-	-- PUBLIC WINDOW OBJECT
-	-----------------------------------------------------------------
-	local window = setmetatable({
-		Screen = screen,
-		Root = root,
-		TopTabs = topTabs,
-		Content = content,
-		NavScroll = navScroll,
-		RightContainer = rightContainerMain,
-		Theme = defaultTheme,
-		_tabs = {},
-		_currentTab = nil,
-	}, MUILib)
-
-	function window:_registerLabel(obj, texts, upper)
-		registerLabel(obj, texts, upper)
-	end
-
-	function window:SetLanguage(code)
-		if code ~= "ru" and code ~= "en" then
-			return
-		end
-		setLang(code)
-	end
-
-	-- язык по умолчанию
-	setLang("en")
-
-	return window
+    local window = setmetatable({}, MUILib)
+    local screen = Instance.new("ScreenGui")
+    screen.Name = "MelonityUI"
+    screen.Parent = CoreGui
+    local main = Instance.new("Frame")
+    main.Size = UDim2.fromOffset(980, 640)
+    main.Position = UDim2.new(0.5, 0, 0.5, 0)
+    main.AnchorPoint = Vector2.new(0.5, 0.5)
+    main.BackgroundColor3 = Theme.MainBG
+    main.BorderSizePixel = 0
+    main.Parent = screen
+    round(main, 4)
+    local drag, start, pPos
+    main.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true start = i.Position pPos = main.Position end end)
+    UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - start main.Position = UDim2.new(pPos.X.Scale, pPos.X.Offset + d.X, pPos.Y.Scale, pPos.Y.Offset + d.Y) end end)
+    UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
+    local header = Instance.new("Frame")
+    header.Size = UDim2.new(1, 0, 0, 45)
+    header.BackgroundColor3 = Theme.TopBarBG
+    header.Parent = main
+    round(header, 4)
+    local logo = Instance.new("ImageLabel")
+    logo.Size = UDim2.fromOffset(24, 24)
+    logo.Position = UDim2.new(0, 15, 0.5, -12)
+    logo.BackgroundTransparency = 1
+    logo.Image = "rbxassetid://13000639907"
+    logo.ImageColor3 = Theme.Accent
+    logo.Parent = header
+    local searchBar = Instance.new("Frame")
+    searchBar.Size = UDim2.fromOffset(380, 28)
+    searchBar.Position = UDim2.new(0, 50, 0.5, -14)
+    searchBar.BackgroundColor3 = Theme.SearchBG
+    searchBar.Parent = header
+    round(searchBar, 4)
+    local sIcon = Instance.new("ImageLabel")
+    sIcon.Size = UDim2.fromOffset(14, 14)
+    sIcon.Position = UDim2.new(0, 10, 0.5, -7)
+    sIcon.Image = "rbxassetid://6031154871"
+    sIcon.ImageColor3 = Theme.TextGray
+    sIcon.BackgroundTransparency = 1
+    sIcon.Parent = searchBar
+    local gInp = Instance.new("TextBox")
+    gInp.Size = UDim2.new(1, -40, 1, 0)
+    gInp.Position = UDim2.new(0, 30, 0, 0)
+    gInp.BackgroundTransparency = 1
+    gInp.Text = ""
+    gInp.PlaceholderText = "Search"
+    gInp.PlaceholderColor3 = Theme.TextGray
+    gInp.TextColor3 = Theme.Text
+    gInp.Font = "GothamMedium"
+    gInp.TextSize = 13
+    gInp.TextXAlignment = "Left"
+    gInp.Parent = searchBar
+    local langBtn = Instance.new("TextButton")
+    langBtn.Size = UDim2.new(0, 100, 0, 26)
+    langBtn.Position = UDim2.new(1, -140, 0.5, -13)
+    langBtn.BackgroundColor3 = Theme.SearchBG
+    langBtn.Text = "🇷🇺 RU"
+    langBtn.TextColor3 = Theme.TextGray
+    langBtn.Font = "GothamMedium"
+    langBtn.TextSize = 12
+    langBtn.Parent = header
+    round(langBtn, 4)
+    langBtn.MouseButton1Click:Connect(function()
+        local nextL = self.Language == "RU" and "EN" or "RU"
+        self:SetLanguage(nextL)
+        langBtn.Text = nextL == "RU" and "🇷🇺 RU" or "🇺🇸 EN"
+    end)
+    local tabContainer = Instance.new("Frame")
+    tabContainer.Size = UDim2.new(1, 0, 0, 40)
+    tabContainer.Position = UDim2.new(0, 0, 0, 45)
+    tabContainer.BackgroundColor3 = Theme.TopBarBG
+    tabContainer.Parent = main
+    local tabLayout = Instance.new("UIListLayout")
+    tabLayout.FillDirection = "Horizontal"
+    tabLayout.Padding = UDim.new(0, 25)
+    tabLayout.VerticalAlignment = "Center"
+    tabLayout.Parent = tabContainer
+    Instance.new("UIPadding", tabContainer).PaddingLeft = UDim.new(0, 20)
+    local sidebar = Instance.new("Frame")
+    sidebar.Size = UDim2.new(0, 220, 1, -85)
+    sidebar.Position = UDim2.new(0, 0, 0, 85)
+    sidebar.BackgroundColor3 = Theme.SidebarBG
+    sidebar.Parent = main
+    local navTitle = Instance.new("TextLabel")
+    navTitle.Text = "Навигация"
+    navTitle.Size = UDim2.new(1, -30, 0, 40)
+    navTitle.Position = UDim2.new(0, 15, 0, 5)
+    navTitle.BackgroundTransparency = 1
+    navTitle.TextColor3 = Theme.Text
+    navTitle.Font = "GothamBold"
+    navTitle.TextSize = 14
+    navTitle.TextXAlignment = "Left"
+    navTitle.Parent = sidebar
+    local sideSearch = searchBar:Clone()
+    sideSearch.Size = UDim2.new(1, -30, 0, 26)
+    sideSearch.Position = UDim2.new(0, 15, 0, 45)
+    sideSearch.Parent = sidebar
+    local navScroll = Instance.new("ScrollingFrame")
+    navScroll.Size = UDim2.new(1, 0, 1, -150)
+    navScroll.Position = UDim2.new(0, 0, 0, 85)
+    navScroll.BackgroundTransparency = 1
+    navScroll.BorderSizePixel = 0
+    navScroll.ScrollBarThickness = 0
+    navScroll.Parent = sidebar
+    Instance.new("UIListLayout", navScroll).Padding = UDim.new(0, 2)
+    local profile = Instance.new("Frame")
+    profile.Size = UDim2.new(1, 0, 0, 60)
+    profile.Position = UDim2.new(0, 0, 1, -60)
+    profile.BackgroundColor3 = Theme.SearchBG
+    profile.Parent = sidebar
+    local av = Instance.new("ImageLabel")
+    av.Size = UDim2.fromOffset(36, 36)
+    av.Position = UDim2.new(0, 15, 0.5, -18)
+    av.Image = "rbxassetid://13000639907"
+    av.Parent = profile
+    round(av, 18)
+    local uName = Instance.new("TextLabel")
+    uName.Text = "Naeldin#306783"
+    uName.Size = UDim2.new(1, -65, 0, 15)
+    uName.Position = UDim2.new(0, 60, 0.5, -10)
+    uName.BackgroundTransparency = 1
+    uName.TextColor3 = Theme.Text
+    uName.Font = "GothamMedium"
+    uName.TextSize = 13
+    uName.TextXAlignment = "Left"
+    uName.Parent = profile
+    local content = Instance.new("Frame")
+    content.Size = UDim2.new(1, -240, 1, -105)
+    content.Position = UDim2.new(0, 230, 0, 95)
+    content.BackgroundTransparency = 1
+    content.Parent = main
+    sideSearch.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local q = sideSearch.TextBox.Text:lower()
+        for _, v in pairs(self.SidebarEntries) do
+            v.Visible = v.Name:lower():find(q) ~= nil
+        end
+    end)
+    function window:AddTopTab(names, icon)
+        local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton")}
+        t.P.Size = UDim2.new(1, 0, 1, 0)
+        t.P.BackgroundTransparency = 1
+        t.P.BorderSizePixel = 0
+        t.P.Visible = false
+        t.P.ScrollBarThickness = 0
+        t.P.Parent = content
+        local tLayout = Instance.new("UIListLayout")
+        tLayout.Padding = UDim.new(0, 15)
+        tLayout.Parent = t.P
+        tLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() t.P.CanvasSize = UDim2.fromOffset(0, tLayout.AbsoluteContentSize.Y) end)
+        self:RegisterLabel(t.B, names)
+        t.B.Size = UDim2.new(0, 0, 1, 0)
+        t.B.AutomaticSize = "X"
+        t.B.BackgroundTransparency = 1
+        t.B.TextColor3 = Theme.TextGray
+        t.B.Font = "GothamBold"
+        t.B.TextSize = 11
+        t.B.Parent = tabContainer
+        t.B.MouseButton1Click:Connect(function()
+            for _, v in pairs(self.Tabs) do v.P.Visible = false v.B.TextColor3 = Theme.TextGray end
+            t.P.Visible = true t.B.TextColor3 = Theme.Accent
+        end)
+        table.insert(self.Tabs, t)
+        if #self.Tabs == 1 then t.P.Visible = true t.B.TextColor3 = Theme.Accent end
+        function t:AddSideEntry(names)
+            local e = Instance.new("TextButton")
+            e.Name = names.EN
+            e.Size = UDim2.new(1, 0, 0, 32)
+            e.BackgroundTransparency = 1
+            e.TextColor3 = Theme.TextGray
+            e.Font = "GothamMedium"
+            e.TextSize = 13
+            e.TextXAlignment = "Left"
+            e.Parent = navScroll
+            MUILib:RegisterLabel(e, names)
+            local ind = Instance.new("Frame")
+            ind.Size = UDim2.fromOffset(4, 4)
+            ind.Position = UDim2.new(0, 12, 0.5, -2)
+            ind.BackgroundColor3 = Theme.TextGray
+            ind.Parent = e
+            round(ind, 2)
+            e.MouseEnter:Connect(function() tween(e, 0.2, {TextColor3 = Theme.Text}) tween(ind, 0.2, {BackgroundColor3 = Theme.Accent}) end)
+            e.MouseLeave:Connect(function() tween(e, 0.2, {TextColor3 = Theme.TextGray}) tween(ind, 0.2, {BackgroundColor3 = Theme.TextGray}) end)
+            table.insert(MUILib.SidebarEntries, e)
+            return e
+        end
+        function t:CreateSection(names)
+            local sec = {}
+            local sf = Instance.new("Frame")
+            sf.Size = UDim2.new(1, 0, 0, 0)
+            sf.BackgroundColor3 = Theme.PanelBG
+            sf.AutomaticSize = "Y"
+            sf.Parent = t.P
+            round(sf, 4)
+            local line = Instance.new("Frame")
+            line.Size = UDim2.new(0, 3, 1, 0)
+            line.BackgroundColor3 = Theme.Accent
+            line.BorderSizePixel = 0
+            line.Parent = sf
+            round(line, 4)
+            local lt = Instance.new("TextLabel")
+            MUILib:RegisterLabel(lt, names)
+            lt.Size = UDim2.new(1, -30, 0, 40)
+            lt.Position = UDim2.new(0, 15, 0, 0)
+            lt.BackgroundTransparency = 1
+            lt.TextColor3 = Theme.Text
+            lt.Font = "GothamBold"
+            lt.TextSize = 13
+            lt.TextXAlignment = "Left"
+            lt.Parent = sf
+            local c = Instance.new("Frame")
+            c.Size = UDim2.new(1, -30, 0, 0)
+            c.Position = UDim2.new(0, 20, 0, 40)
+            c.AutomaticSize = "Y"
+            c.BackgroundTransparency = 1
+            c.Parent = sf
+            Instance.new("UIListLayout", c).Padding = UDim.new(0, 10)
+            function sec:AddToggle(names, default, callback)
+                local r = Instance.new("Frame")
+                r.Size = UDim2.new(1, 0, 0, 26)
+                r.BackgroundTransparency = 1
+                r.Parent = c
+                local tl = Instance.new("TextLabel")
+                MUILib:RegisterLabel(tl, names)
+                tl.Size = UDim2.new(1, -45, 1, 0)
+                tl.BackgroundTransparency = 1
+                tl.TextColor3 = Theme.Text
+                tl.Font = "Gotham"
+                tl.TextSize = 12
+                tl.TextXAlignment = "Left"
+                tl.Parent = r
+                local b_bg = Instance.new("TextButton")
+                b_bg.Size = UDim2.new(0, 34, 0, 18)
+                b_bg.Position = UDim2.new(1, -34, 0.5, -9)
+                b_bg.BackgroundColor3 = Theme.MainBG
+                b_bg.Text = ""
+                b_bg.Parent = r
+                round(b_bg, 9)
+                local d = Instance.new("Frame")
+                d.Size = UDim2.fromOffset(14, 14)
+                d.Position = UDim2.new(0, 2, 0.5, -7)
+                d.BackgroundColor3 = Theme.TextGray
+                d.Parent = b_bg
+                round(d, 7)
+                local st = default or false
+                local function up()
+                    tween(b_bg, 0.2, {BackgroundColor3 = st and Theme.Accent or Theme.MainBG})
+                    tween(d, 0.2, {Position = st and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)})
+                    if callback then callback(st) end
+                end
+                b_bg.MouseButton1Click:Connect(function() st = not st up() end)
+                up()
+            end
+            function sec:AddItemToggle(icon, callback)
+                if not c:FindFirstChild("Grid") then
+                    local g = Instance.new("Frame")
+                    g.Name = "Grid"
+                    g.Size = UDim2.new(1, 0, 0, 0)
+                    g.AutomaticSize = "Y"
+                    g.BackgroundTransparency = 1
+                    g.Parent = c
+                    local gl = Instance.new("UIGridLayout")
+                    gl.CellSize = UDim2.fromOffset(42, 42)
+                    gl.CellPadding = UDim2.fromOffset(6, 6)
+                    gl.Parent = g
+                end
+                local b = Instance.new("TextButton")
+                b.BackgroundColor3 = Theme.MainBG
+                b.Text = ""
+                b.Parent = c.Grid
+                round(b, 4)
+                local s = stroke(b, Theme.ToggleOff, 1.5)
+                local img = Instance.new("ImageLabel")
+                img.Size = UDim2.new(0.7, 0, 0.7, 0)
+                img.Position = UDim2.new(0.15, 0, 0.15, 0)
+                img.BackgroundTransparency = 1
+                img.Image = icon or ""
+                img.Parent = b
+                local st = false
+                b.MouseButton1Click:Connect(function()
+                    st = not st
+                    tween(s, 0.2, {Color = st and Theme.ToggleOn or Theme.ToggleOff})
+                    if callback then callback(st) end
+                end)
+            end
+            function sec:AddSlider(names, min, max, default, callback)
+                local r = Instance.new("Frame")
+                r.Size = UDim2.new(1, 0, 0, 40)
+                r.BackgroundTransparency = 1
+                r.Parent = c
+                local tl = Instance.new("TextLabel")
+                MUILib:RegisterLabel(tl, names)
+                tl.Size = UDim2.new(1, 0, 0, 15)
+                tl.BackgroundTransparency = 1
+                tl.TextColor3 = Theme.Text
+                tl.Font = "Gotham"
+                tl.TextSize = 12
+                tl.TextXAlignment = "Left"
+                tl.Parent = r
+                local vL = Instance.new("TextLabel")
+                vL.Text = tostring(default)
+                vL.Size = UDim2.new(0, 40, 0, 20)
+                vL.Position = UDim2.new(1, -40, 0.5, 0)
+                vL.BackgroundColor3 = Theme.MainBG
+                vL.TextColor3 = Theme.Text
+                vL.Parent = r
+                round(vL, 4)
+                local bar = Instance.new("Frame")
+                bar.Size = UDim2.new(1, -50, 0, 4)
+                bar.Position = UDim2.new(0, 0, 0.75, 0)
+                bar.BackgroundColor3 = Theme.MainBG
+                bar.Parent = r
+                round(bar, 2)
+                local fill = Instance.new("Frame")
+                fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0)
+                fill.BackgroundColor3 = Theme.Accent
+                fill.Parent = bar
+                round(fill, 2)
+                local handle = Instance.new("Frame")
+                handle.Size = UDim2.fromOffset(12, 12)
+                handle.AnchorPoint = Vector2.new(0.5, 0.5)
+                handle.Position = UDim2.new(fill.Size.X.Scale, 0, 0.5, 0)
+                handle.BackgroundColor3 = Theme.Text
+                handle.Parent = bar
+                round(handle, 6)
+                local drag = false
+                local function move(i)
+                    local p = math.clamp((i.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+                    local v = math.floor(min + (max - min) * p)
+                    fill.Size = UDim2.new(p, 0, 1, 0)
+                    handle.Position = UDim2.new(p, 0, 0.5, 0)
+                    vL.Text = tostring(v)
+                    if callback then callback(v) end
+                end
+                handle.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true end end)
+                UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
+                UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then move(i) end end)
+            end
+            function sec:AddDropdown(names, options, multi, callback)
+                local drop = {Open = false, Selected = {}, Items = {}}
+                local r = Instance.new("Frame")
+                r.Size = UDim2.new(1, 0, 0, 45)
+                r.BackgroundTransparency = 1
+                r.Parent = c
+                local b = Instance.new("TextButton")
+                b.Size = UDim2.new(1, 0, 0, 25)
+                b.Position = UDim2.new(0, 0, 0, 20)
+                b.BackgroundColor3 = Theme.SearchBG
+                b.Text = "  Select..."
+                b.TextColor3 = Theme.TextGray
+                b.Font = "Gotham"
+                b.TextSize = 12
+                b.TextXAlignment = "Left"
+                b.Parent = r
+                round(b, 4)
+                local list = Instance.new("ScrollingFrame")
+                list.Size = UDim2.new(1, 0, 0, 0)
+                list.Position = UDim2.new(0, 0, 0, 50)
+                list.BackgroundColor3 = Theme.SearchBG
+                list.ZIndex = 10
+                list.ClipsDescendants = true
+                list.ScrollBarThickness = 2
+                list.Parent = r
+                round(list, 4)
+                local ll = Instance.new("UIListLayout")
+                ll.Parent = list
+                b.MouseButton1Click:Connect(function()
+                    drop.Open = not drop.Open
+                    tween(list, 0.2, {Size = drop.Open and UDim2.new(1, 0, 0, math.min(ll.AbsoluteContentSize.Y, 150)) or UDim2.new(1, 0, 0, 0)})
+                    list.CanvasSize = UDim2.fromOffset(0, ll.AbsoluteContentSize.Y)
+                end)
+                local function refresh()
+                    b.Text = "  " .. (#drop.Selected > 0 and table.concat(drop.Selected, ", ") or "Select...")
+                    if callback then callback(multi and drop.Selected or drop.Selected[1]) end
+                end
+                for _, val in pairs(options) do
+                    local ob = Instance.new("TextButton")
+                    ob.Size = UDim2.new(1, 0, 0, 25)
+                    ob.BackgroundTransparency = 1
+                    ob.Text = "  " .. val
+                    ob.TextColor3 = Theme.TextGray
+                    ob.Font = "Gotham"
+                    ob.TextSize = 12
+                    ob.TextXAlignment = "Left"
+                    ob.Parent = list
+                    ob.MouseButton1Click:Connect(function()
+                        if multi then
+                            if table.find(drop.Selected, val) then
+                                table.remove(drop.Selected, table.find(drop.Selected, val))
+                                ob.TextColor3 = Theme.TextGray
+                            else
+                                table.insert(drop.Selected, val)
+                                ob.TextColor3 = Theme.Accent
+                            end
+                        else
+                            drop.Selected = {val}
+                            for _, btn in pairs(drop.Items) do btn.TextColor3 = Theme.TextGray end
+                            ob.TextColor3 = Theme.Accent
+                            drop.Open = false
+                            list.Size = UDim2.new(1, 0, 0, 0)
+                        end
+                        refresh()
+                    end)
+                    table.insert(drop.Items, ob)
+                end
+                local d_obj = {
+                    EnableAll = function()
+                        drop.Selected = {}
+                        for _, v in pairs(options) do table.insert(drop.Selected, v) end
+                        for _, btn in pairs(drop.Items) do btn.TextColor3 = Theme.Accent end
+                        refresh()
+                    end,
+                    DisableAll = function()
+                        drop.Selected = {}
+                        for _, btn in pairs(drop.Items) do btn.TextColor3 = Theme.TextGray end
+                        refresh()
+                    end
+                }
+                return d_obj
+            end
+            return sec
+        end
+        return t
+    end
+    return window
 end
-
----------------------------------------------------------------------
--- TOP TABS
----------------------------------------------------------------------
-
-function MUILib:AddTopTab(name)
-	local displayText
-	local upper = true
-
-	if type(name) == "table" then
-		displayText = name.en or name.ru or "TAB"
-	else
-		displayText = tostring(name)
-	end
-
-	local tabButton = Instance.new("TextButton")
-	tabButton.Name = type(name) == "string" and name or "TopTab"
-	tabButton.Size = UDim2.new(0, 0, 0, 24)
-	tabButton.AutomaticSize = Enum.AutomaticSize.X
-	tabButton.BackgroundTransparency = 1
-	tabButton.Font = Enum.Font.GothamSemibold
-	tabButton.TextSize = 13
-	tabButton.TextColor3 = defaultTheme.TextSecondary
-	tabButton.AutoButtonColor = false
-	tabButton.Parent = self.TopTabs
-
-	-- локализация текста вкладки
-	if self._registerLabel and type(name) == "table" then
-		self:_registerLabel(tabButton, name, true)
-		-- applyOne уже поставит текст
-	else
-		tabButton.Text = displayText:upper()
-	end
-
-	local page = Instance.new("Frame")
-	page.Name = "Page"
-	page.Size = UDim2.new(1, 0, 1, 0)
-	page.BackgroundTransparency = 1
-	page.Visible = false
-	page.Parent = self.RightContainer
-
-	local layout = Instance.new("UIListLayout")
-	layout.FillDirection = Enum.FillDirection.Vertical
-	layout.Padding = UDim.new(0, 10)
-	layout.Parent = page
-
-	local tab = {
-		Name = displayText,
-		Button = tabButton,
-		Page = page,
-		Layout = layout,
-		Sections = {},
-		Owner = self,
-	}
-
-	local function select()
-		if self._currentTab and self._currentTab ~= tab then
-			self._currentTab.Button.TextColor3 = defaultTheme.TextSecondary
-			self._currentTab.Page.Visible = false
-		end
-		self._currentTab = tab
-		tabButton.TextColor3 = defaultTheme.Accent
-		page.Visible = true
-	end
-
-	tabButton.MouseButton1Click:Connect(select)
-
-	if not self._currentTab then
-		select()
-	end
-
-	table.insert(self._tabs, tab)
-
-	function tab:AddSideEntry(text)
-		local display = text
-		if type(text) == "table" then
-			display = text.en or text.ru or ""
-		end
-
-		local btn = Instance.new("TextButton")
-		btn.Name = type(text) == "string" and text or "SideEntry"
-		btn.Size = UDim2.new(1, -4, 0, 28)
-		btn.BackgroundTransparency = 1
-		btn.Text = display
-		btn.Font = Enum.Font.Gotham
-		btn.TextSize = 13
-		btn.TextColor3 = defaultTheme.TextSecondary
-		btn.TextXAlignment = Enum.TextXAlignment.Left
-		btn.AutoButtonColor = false
-		btn.Parent = self.Owner.NavScroll
-
-		local padding = Instance.new("UIPadding")
-		padding.PaddingLeft = UDim.new(0, 10)
-		padding.Parent = btn
-
-		if self.Owner._registerLabel and type(text) == "table" then
-			self.Owner:_registerLabel(btn, text, false)
-		end
-
-		btn.MouseEnter:Connect(function()
-			tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				BackgroundTransparency = 0.9,
-				BackgroundColor3 = defaultTheme.PanelBackground,
-				TextColor3 = defaultTheme.TextPrimary,
-			})
-		end)
-
-		btn.MouseLeave:Connect(function()
-			tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				BackgroundTransparency = 1,
-				TextColor3 = defaultTheme.TextSecondary,
-			})
-		end)
-
-		return btn
-	end
-
-	function tab:CreateSection(title)
-		local display = title
-		if type(title) == "table" then
-			display = title.en or title.ru or ""
-		end
-
-		local sectionFrame = Instance.new("Frame")
-		sectionFrame.Name = "Section"
-		sectionFrame.Size = UDim2.new(0.5, -6, 0, 0)
-		sectionFrame.AutomaticSize = Enum.AutomaticSize.Y
-		sectionFrame.BackgroundColor3 = defaultTheme.PanelBackground
-		sectionFrame.BorderSizePixel = 0
-		sectionFrame.Parent = page
-		createRound(sectionFrame, 8)
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Color = Color3.fromRGB(50, 54, 70)
-		stroke.Thickness = 1
-		stroke.Parent = sectionFrame
-
-		-- вертикальная округлая линия на всю высоту
-		local accentLine = Instance.new("Frame")
-		accentLine.Name = "AccentLine"
-		accentLine.Size = UDim2.new(0, 3, 1, -16)
-		accentLine.Position = UDim2.new(0, 0, 0, 8)
-		accentLine.BackgroundColor3 = defaultTheme.Accent
-		accentLine.BorderSizePixel = 0
-		accentLine.Parent = sectionFrame
-		createRound(accentLine, 3)
-
-		local titleLabel = Instance.new("TextLabel")
-		titleLabel.Name = "Title"
-		titleLabel.Size = UDim2.new(1, -24, 0, 24)
-		titleLabel.Position = UDim2.new(0, 12, 0, 6)
-		titleLabel.BackgroundTransparency = 1
-		titleLabel.Font = Enum.Font.GothamBold
-		titleLabel.Text = display
-		titleLabel.TextSize = 14
-		titleLabel.TextColor3 = defaultTheme.TextPrimary
-		titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-		titleLabel.Parent = sectionFrame
-
-		if self.Owner._registerLabel and type(title) == "table" then
-			self.Owner:_registerLabel(titleLabel, title, false)
-		end
-
-		local body = Instance.new("Frame")
-		body.Name = "Body"
-		body.Size = UDim2.new(1, -16, 1, -40)
-		body.Position = UDim2.new(0, 8, 0, 36)
-		body.BackgroundTransparency = 1
-		body.Parent = sectionFrame
-
-		local bodyLayout = Instance.new("UIListLayout")
-		bodyLayout.SortOrder = Enum.SortOrder.LayoutOrder
-		bodyLayout.Padding = UDim.new(0, 6)
-		bodyLayout.Parent = body
-
-		local section = {
-			Frame = sectionFrame,
-			Body = body,
-		}
-
-		function section:AddToggle(opts)
-			opts = opts or {}
-			local text = opts.Text or "Toggle"
-			local callback = opts.Callback or function() end
-
-			local row = Instance.new("Frame")
-			row.Name = "ToggleRow"
-			row.Size = UDim2.new(1, 0, 0, 24)
-			row.BackgroundTransparency = 1
-			row.Parent = body
-
-			local label = Instance.new("TextLabel")
-			label.Name = "Label"
-			label.Size = UDim2.new(1, -52, 1, 0)
-			label.Position = UDim2.new(0, 0, 0, 0)
-			label.BackgroundTransparency = 1
-			label.Font = Enum.Font.Gotham
-			label.Text = text
-			label.TextSize = 13
-			label.TextColor3 = defaultTheme.TextPrimary
-			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.Parent = row
-
-			if self.Owner and self.Owner._registerLabel and type(text) == "table" then
-				self.Owner:_registerLabel(label, text, false)
-			end
-
-			local button = Instance.new("TextButton")
-			button.Name = "Switch"
-			button.Size = UDim2.new(0, 40, 0, 20)
-			button.Position = UDim2.new(1, -40, 0.5, -10)
-			button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-			button.Text = ""
-			button.AutoButtonColor = false
-			button.Parent = row
-			createRound(button, 10)
-
-			local dot = Instance.new("Frame")
-			dot.Name = "Dot"
-			dot.Size = UDim2.new(0, 16, 0, 16)
-			dot.Position = UDim2.new(0, 2, 0.5, -8)
-			dot.BackgroundColor3 = defaultTheme.TextPrimary
-			dot.Parent = button
-			createRound(dot, 8)
-
-			local state = false
-
-			local function set(v)
-				state = v
-				if state then
-					tween(button, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-						BackgroundColor3 = defaultTheme.Accent
-					})
-					tween(dot, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-						Position = UDim2.new(1, -18, 0.5, -8)
-					})
-				else
-					tween(button, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-						BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-					})
-					tween(dot, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-						Position = UDim2.new(0, 2, 0.5, -8)
-					})
-				end
-				callback(state)
-			end
-
-			button.MouseButton1Click:Connect(function()
-				set(not state)
-			end)
-
-			return {
-				Set = set,
-				Get = function()
-					return state
-				end,
-			}
-		end
-
-		table.insert(self.Sections, section)
-
-		return section
-	end
-
-	return tab
-end
-
 return MUILib
