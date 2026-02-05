@@ -158,6 +158,8 @@ function MUILib:CreateWindow(opts)
 	screen.Name = "MelonityUI"
 	screen.Parent = CoreGui
 
+	local draggingSlider = false
+
 	local main = Instance.new("Frame")
 	main.Size = UDim2.fromOffset(980, 640)
 	main.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -168,67 +170,26 @@ function MUILib:CreateWindow(opts)
 	round(main, 4)
 
 	local drag, start, pPos
-	main.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = true start = i.Position pPos = main.Position end end)
+	main.InputBegan:Connect(function(i)
+		if draggingSlider then return end
+		if i.UserInputType == Enum.UserInputType.MouseButton1 then
+			drag = true
+			start = i.Position
+			pPos = main.Position
+		end
+	end)
 	UserInputService.InputChanged:Connect(function(i) if drag and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - start main.Position = UDim2.new(pPos.X.Scale, pPos.X.Offset + d.X, pPos.Y.Scale, pPos.Y.Offset + d.Y) end end)
 	UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then drag = false end end)
-
-	-- запоминаем исходную прозрачность, чтобы анимация не ломала цвета
-	local originalTransparency = {}
-
-	local function cacheGuiTransparency(root)
-		for _, obj in ipairs(root:GetDescendants()) do
-			if obj:IsA("GuiObject") then
-				local entry = originalTransparency[obj]
-				if not entry then
-					entry = {
-						bg = obj.BackgroundTransparency,
-						text = obj:IsA("TextLabel") or obj:IsA("TextButton") and obj.TextTransparency or nil,
-						image = obj:IsA("ImageLabel") or obj:IsA("ImageButton") and obj.ImageTransparency or nil,
-					}
-					originalTransparency[obj] = entry
-				end
-			end
-		end
-	end
-
-	local function tweenGuiVisibility(root, makeVisible)
-		cacheGuiTransparency(root)
-		for obj, entry in pairs(originalTransparency) do
-			if obj and obj.Parent then
-				if makeVisible then
-					if entry.bg ~= nil then tween(obj, 0.25, {BackgroundTransparency = entry.bg}) end
-					if entry.text ~= nil and (obj:IsA("TextLabel") or obj:IsA("TextButton")) then
-						tween(obj, 0.25, {TextTransparency = entry.text})
-					end
-					if entry.image ~= nil and (obj:IsA("ImageLabel") or obj:IsA("ImageButton")) then
-						tween(obj, 0.25, {ImageTransparency = entry.image})
-					end
-				else
-					if obj.BackgroundTransparency ~= nil then tween(obj, 0.25, {BackgroundTransparency = 1}) end
-					if obj:IsA("TextLabel") or obj:IsA("TextButton") then
-						tween(obj, 0.25, {TextTransparency = 1})
-					end
-					if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
-						tween(obj, 0.25, {ImageTransparency = 1})
-					end
-				end
-			end
-		end
-	end
 
 	local visible = true
 	local function toggleVisible()
 		visible = not visible
 		if visible then
 			main.Visible = true
-			main.BackgroundTransparency = 1
-			tween(main, 0.3, {Size = UDim2.fromOffset(980, 640), BackgroundTransparency = 0})
-			tweenGuiVisibility(main, true)
+			tween(main, 0.25, {Size = UDim2.fromOffset(980, 640), BackgroundTransparency = 0})
 		else
-			tweenGuiVisibility(main, false)
-			tween(main, 0.3, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
-			-- после анимации полностью скрываем, чтобы не оставались артефакты
-			task.delay(0.32, function()
+			tween(main, 0.25, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
+			task.delay(0.26, function()
 				main.Visible = false
 			end)
 		end
@@ -277,7 +238,7 @@ function MUILib:CreateWindow(opts)
 	gInp.Position = UDim2.new(0, 30, 0, 0)
 	gInp.BackgroundTransparency = 1
 	gInp.Text = ""
-	gInp.PlaceholderText = "Search"
+	gInp.PlaceholderText = "Search sections"
 	gInp.PlaceholderColor3 = Theme.TextGray
 	gInp.TextColor3 = Theme.Text
 	gInp.Font = "GothamMedium"
@@ -286,14 +247,19 @@ function MUILib:CreateWindow(opts)
 	gInp.Parent = searchH
 	gInp.ClearTextOnFocus = false
 	gInp.FocusLost:Connect(function()
-		local query = string.lower(gInp.Text) or ""
+		local query = string.lower(gInp.Text or "")
 		for _, tab in pairs(win.Tabs) do
-			for _, entry in pairs(tab.Window.SidebarEntries) do
-				local txt = string.lower(entry.Text) or ""
-				if query == "" or txt:find(query, 1, true) then
-					entry.Visible = true
-				else
-					entry.Visible = false
+			if tab.P then
+				for _, child in ipairs(tab.P:GetChildren()) do
+					if child:IsA("Frame") then
+						local label = child:FindFirstChildOfClass("TextLabel")
+						local txt = label and string.lower(label.Text or "") or ""
+						if query == "" or txt:find(query, 1, true) then
+							child.Visible = true
+						else
+							child.Visible = false
+						end
+					end
 				end
 			end
 		end
@@ -349,9 +315,40 @@ function MUILib:CreateWindow(opts)
 	ns.Parent = sb
 	Instance.new("UIListLayout", ns).Padding = UDim.new(0, 2)
 
+	-- поиск по подвкладкам (героям) в навигации
+	local navSearch = Instance.new("Frame")
+	navSearch.Size = UDim2.new(1, -30, 0, 26)
+	navSearch.Position = UDim2.new(0, 15, 0, 40)
+	navSearch.BackgroundColor3 = defaultTheme.SearchBackground
+	navSearch.Parent = sb
+	round(navSearch, 4)
+	local navBox = Instance.new("TextBox")
+	navBox.Size = UDim2.new(1, -10, 1, 0)
+	navBox.Position = UDim2.new(0, 5, 0, 0)
+	navBox.BackgroundTransparency = 1
+	navBox.Text = ""
+	navBox.PlaceholderText = "Search heroes"
+	navBox.PlaceholderColor3 = Theme.TextGray
+	navBox.TextColor3 = Theme.Text
+	navBox.Font = "GothamMedium"
+	navBox.TextSize = 12
+	navBox.TextXAlignment = "Left"
+	navBox.ClearTextOnFocus = false
+	navBox.Parent = navSearch
+
+	navBox.FocusLost:Connect(function()
+		local q = string.lower(navBox.Text or "")
+		for _, child in ipairs(ns:GetChildren()) do
+			if child:IsA("TextButton") then
+				local txt = string.lower(child.Name or child.Text or "")
+				child.Visible = (q == "" or txt:find(q, 1, true))
+			end
+		end
+	end)
+
 	local prof = Instance.new("Frame")
-	prof.Size = UDim2.new(1, -8, 0, 58)
-	prof.Position = UDim2.new(0, 4, 1, -62)
+	prof.Size = UDim2.new(1, -16, 0, 58)
+	prof.Position = UDim2.new(0, 8, 1, -66)
 	prof.BackgroundColor3 = defaultTheme.SearchBackground
 	prof.Parent = sb
 	round(prof, 4)
