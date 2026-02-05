@@ -179,10 +179,17 @@ function MUILib:CreateWindow(opts)
 			tween(main, 0.3, {Size = UDim2.fromOffset(980, 640), BackgroundTransparency = 0})
 			for _, child in pairs(main:GetDescendants()) do
 				if child:IsA("GuiObject") then
-					tween(child, 0.3, {BackgroundTransparency = child.BackgroundTransparency})
+					local originalTransparency = child.BackgroundTransparency
+					child.BackgroundTransparency = 1
+					tween(child, 0.3, {BackgroundTransparency = originalTransparency})
 				end
 			end
 		else
+			for _, child in pairs(main:GetDescendants()) do
+				if child:IsA("GuiObject") then
+					tween(child, 0.3, {BackgroundTransparency = 1})
+				end
+			end
 			tween(main, 0.3, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
 		end
 	end
@@ -367,12 +374,34 @@ function MUILib:CreateWindow(opts)
 		t.B.TextSize = 11
 		t.B.Parent = th
 		
+		local indicator = Instance.new("Frame")
+		indicator.Name = "Indicator"
+		indicator.Size = UDim2.new(1, 0, 0, 2)
+		indicator.Position = UDim2.new(0, 0, 1, -2)
+		indicator.BackgroundColor3 = Theme.Accent
+		indicator.BorderSizePixel = 0
+		indicator.Visible = false
+		indicator.Parent = t.B
+		round(indicator, 1)
+		
 		t.B.MouseButton1Click:Connect(function()
-			for _, v in pairs(self.Tabs) do v.P.Visible = false v.B.TextColor3 = Theme.TextGray end
-			t.P.Visible = true t.B.TextColor3 = Theme.Accent
+			for _, v in pairs(self.Tabs) do 
+				v.P.Visible = false 
+				v.B.TextColor3 = Theme.TextGray
+				if v.B:FindFirstChild("Indicator") then
+					v.B.Indicator.Visible = false
+				end
+			end
+			t.P.Visible = true 
+			t.B.TextColor3 = Theme.Accent
+			t.B.Indicator.Visible = true
 		end)
 		table.insert(self.Tabs, t)
-		if #self.Tabs == 1 then t.P.Visible = true t.B.TextColor3 = Theme.Accent end
+		if #self.Tabs == 1 then 
+			t.P.Visible = true 
+			t.B.TextColor3 = Theme.Accent
+			t.B.Indicator.Visible = true
+		end
 
 		function t:AddSideEntry(text)
 			local e = Instance.new("TextButton")
@@ -449,7 +478,9 @@ function MUILib:CreateWindow(opts)
 			l.Position = UDim2.new(0, 0, 0, 0)
 			l.BackgroundColor3 = Theme.Accent
 			l.Parent = sf
-			round(l, 2)
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0, 2)
+			corner.Parent = l
 			local lt = Instance.new("TextLabel")
 			lt.Text = title
 			lt.Size = UDim2.new(1, -20, 0, 40)
@@ -469,6 +500,9 @@ function MUILib:CreateWindow(opts)
 			local cl = Instance.new("UIListLayout")
 			cl.Padding = UDim.new(0, 8)
 			cl.Parent = c
+			local cp = Instance.new("UIPadding")
+			cp.PaddingBottom = UDim.new(0, 8)
+			cp.Parent = c
 
 			function sec:AddToggle(o)
 				local r = Instance.new("Frame")
@@ -525,7 +559,7 @@ function MUILib:CreateWindow(opts)
 					g.BackgroundTransparency = 1
 					g.Parent = c
 					local gl = Instance.new("UIGridLayout")
-					gl.CellSize = UDim2.fromOffset(40, 40)
+					gl.CellSize = UDim2.fromOffset(38, 38)
 					gl.CellPadding = UDim2.fromOffset(6, 6)
 					gl.Parent = g
 				end
@@ -536,8 +570,8 @@ function MUILib:CreateWindow(opts)
 				round(b, 4)
 				local s = addStroke(b, Theme.ToggleOff, 1.5)
 				local img = Instance.new("ImageLabel")
-				img.Size = UDim2.new(0.7, 0, 0.7, 0)
-				img.Position = UDim2.new(0.15, 0, 0.15, 0)
+				img.Size = UDim2.new(0.65, 0, 0.65, 0)
+				img.Position = UDim2.new(0.175, 0, 0.175, 0)
 				img.BackgroundTransparency = 1
 				img.Image = o.Icon or ""
 				img.Parent = b
