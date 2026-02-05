@@ -6,6 +6,109 @@ local CoreGui = game:GetService("CoreGui")
 local MUILib = {}
 MUILib.__index = MUILib
 
+local activeNotifies = {}
+local notifyOffset = 0
+local notifySpacing = 85
+
+function MUILib:Notify(opts)
+	opts = opts or {}
+	local title = opts.Title or "Melonity"
+	local text = opts.Text or "Notification"
+	local duration = opts.Duration or 3
+
+	local screen = Instance.new("ScreenGui")
+	screen.Name = "MelonityNotify"
+	screen.ResetOnSpawn = false
+	screen.ZIndexBehavior = Enum.ZIndexBehavior.Global
+	screen.Parent = CoreGui
+
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.fromOffset(280, 72)
+	frame.AnchorPoint = Vector2.new(1, 1)
+	frame.Position = UDim2.new(1, -20, 1, -20 - notifyOffset)
+	frame.BackgroundColor3 = defaultTheme.PanelBackground
+	frame.BorderSizePixel = 0
+	frame.BackgroundTransparency = 1
+	frame.Parent = screen
+	round(frame, 6)
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = defaultTheme.Accent
+	stroke.Thickness = 1
+	stroke.Parent = frame
+
+	local logo = Instance.new("ImageLabel")
+	logo.Size = UDim2.fromOffset(32, 32)
+	logo.Position = UDim2.new(0, 10, 0, 10)
+	logo.BackgroundTransparency = 1
+	logo.Image = "rbxassetid://75683973301629"
+	logo.Parent = frame
+	round(logo, 16)
+
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.new(1, -60, 0, 20)
+	titleLabel.Position = UDim2.new(0, 52, 0, 10)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Font = "GothamBold"
+	titleLabel.Text = title
+	titleLabel.TextSize = 14
+	titleLabel.TextColor3 = defaultTheme.TextPrimary
+	titleLabel.TextXAlignment = "Left"
+	titleLabel.Parent = frame
+
+	local textLabel = Instance.new("TextLabel")
+	textLabel.Size = UDim2.new(1, -60, 1, -52)
+	textLabel.Position = UDim2.new(0, 52, 0, 32)
+	textLabel.BackgroundTransparency = 1
+	textLabel.Font = "Gotham"
+	textLabel.TextWrapped = true
+	textLabel.Text = text
+	textLabel.TextSize = 12
+	textLabel.TextColor3 = defaultTheme.TextSecondary
+	textLabel.TextXAlignment = "Left"
+	textLabel.TextYAlignment = "Top"
+	textLabel.Parent = frame
+
+	local progress = Instance.new("Frame")
+	progress.Size = UDim2.new(1, 0, 0, 3)
+	progress.Position = UDim2.new(0, 0, 1, -3)
+	progress.BackgroundColor3 = defaultTheme.Accent
+	progress.BorderSizePixel = 0
+	progress.Parent = frame
+	round(progress, 2)
+
+	tween(frame, 0.3, {BackgroundTransparency = 0, Position = UDim2.new(1, -20, 1, -20 - notifyOffset)})
+
+	notifyOffset = notifyOffset + notifySpacing
+	table.insert(activeNotifies, screen)
+
+	local elapsed = 0
+	local step = 0.03
+	task.spawn(function()
+		while elapsed < duration do
+			task.wait(step)
+			elapsed = elapsed + step
+			progress.Size = UDim2.new(1 - (elapsed / duration), 0, 0, 3)
+		end
+	end)
+
+	task.delay(duration, function()
+		tween(frame, 0.3, {BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
+		task.delay(0.35, function()
+			if screen then
+				screen:Destroy()
+				for i, s in pairs(activeNotifies) do
+					if s == screen then
+						table.remove(activeNotifies, i)
+						break
+					end
+				end
+				notifyOffset = notifyOffset - notifySpacing
+			end
+		end)
+	end)
+end
+
 local defaultTheme = {
 	Background = Color3.fromRGB(40, 42, 54),
 	NavBackground = Color3.fromRGB(46, 48, 60),
@@ -72,7 +175,16 @@ function MUILib:CreateWindow(opts)
 	local visible = true
 	local function toggleVisible()
 		visible = not visible
-		tween(main, 0.25, {Size = visible and UDim2.fromOffset(980, 640) or UDim2.fromOffset(0, 0)})
+		if visible then
+			tween(main, 0.3, {Size = UDim2.fromOffset(980, 640), BackgroundTransparency = 0})
+			for _, child in pairs(main:GetDescendants()) do
+				if child:IsA("GuiObject") then
+					tween(child, 0.3, {BackgroundTransparency = child.BackgroundTransparency})
+				end
+			end
+		else
+			tween(main, 0.3, {Size = UDim2.fromOffset(0, 0), BackgroundTransparency = 1})
+		end
 	end
 
 	UserInputService.InputBegan:Connect(function(input, gp)
@@ -190,8 +302,8 @@ function MUILib:CreateWindow(opts)
 	Instance.new("UIListLayout", ns).Padding = UDim.new(0, 2)
 
 	local prof = Instance.new("Frame")
-	prof.Size = UDim2.new(1, -4, 0, 60)
-	prof.Position = UDim2.new(0, 2, 1, -60)
+	prof.Size = UDim2.new(1, -8, 0, 58)
+	prof.Position = UDim2.new(0, 4, 1, -62)
 	prof.BackgroundColor3 = defaultTheme.SearchBackground
 	prof.Parent = sb
 	round(prof, 4)
@@ -248,6 +360,7 @@ function MUILib:CreateWindow(opts)
 		t.B.Size = UDim2.new(0, 0, 1, 0)
 		t.B.AutomaticSize = "X"
 		t.B.BackgroundTransparency = 1
+		t.B.BorderSizePixel = 0
 		t.B.Text = (icon and "   " or "") .. name:upper()
 		t.B.TextColor3 = Theme.TextGray
 		t.B.Font = "GothamBold"
@@ -332,8 +445,8 @@ function MUILib:CreateWindow(opts)
 			sf.Parent = t.P
 			round(sf, 4)
 			local l = Instance.new("Frame")
-			l.Size = UDim2.new(0, 3, 1, -40)
-			l.Position = UDim2.new(0, 0, 0, 12)
+			l.Size = UDim2.new(0, 3, 1, 0)
+			l.Position = UDim2.new(0, 0, 0, 0)
 			l.BackgroundColor3 = Theme.Accent
 			l.Parent = sf
 			round(l, 2)
@@ -364,7 +477,7 @@ function MUILib:CreateWindow(opts)
 				r.Parent = c
 				local label = Instance.new("TextLabel")
 				label.Text = o.Text
-				label.Size = UDim2.new(1, -45, 1, 0)
+				label.Size = UDim2.new(1, -55, 1, 0)
 				label.BackgroundTransparency = 1
 				label.TextColor3 = Theme.Text
 				label.Font = "Gotham"
@@ -373,7 +486,7 @@ function MUILib:CreateWindow(opts)
 				label.Parent = r
 				local bg = Instance.new("TextButton")
 				bg.Size = UDim2.new(0, 36, 0, 18)
-				bg.Position = UDim2.new(1, -36, 0.5, -9)
+				bg.Position = UDim2.new(1, -45, 0.5, -9)
 				bg.BackgroundColor3 = Theme.MainBG
 				bg.Text = ""
 				bg.Parent = r
@@ -407,7 +520,7 @@ function MUILib:CreateWindow(opts)
 				if not c:FindFirstChild("Grid") then
 					local g = Instance.new("Frame")
 					g.Name = "Grid"
-					g.Size = UDim2.new(1, 0, 0, 0)
+					g.Size = UDim2.new(1, -12, 0, 0)
 					g.AutomaticSize = "Y"
 					g.BackgroundTransparency = 1
 					g.Parent = c
@@ -458,7 +571,7 @@ function MUILib:CreateWindow(opts)
 				local bold = o.Bold or false
 				local label = Instance.new("TextLabel")
 				label.Name = "Label"
-				label.Size = UDim2.new(1, 0, 0, 20)
+				label.Size = UDim2.new(1, -12, 0, 20)
 				label.BackgroundTransparency = 1
 				label.Text = text
 				label.TextSize = 13
@@ -474,7 +587,7 @@ function MUILib:CreateWindow(opts)
 				local text = o.Text or "Paragraph"
 				local label = Instance.new("TextLabel")
 				label.Name = "Paragraph"
-				label.Size = UDim2.new(1, 0, 0, 0)
+				label.Size = UDim2.new(1, -12, 0, 0)
 				label.AutomaticSize = "Y"
 				label.BackgroundTransparency = 1
 				label.TextWrapped = true
@@ -494,7 +607,7 @@ function MUILib:CreateWindow(opts)
 				local callback = o.Callback or function() end
 				local button = Instance.new("TextButton")
 				button.Name = "Button"
-				button.Size = UDim2.new(0, 120, 0, 26)
+				button.Size = UDim2.new(0, 115, 0, 26)
 				button.BackgroundColor3 = defaultTheme.SearchBackground
 				button.Text = text
 				button.TextSize = 13
@@ -525,7 +638,7 @@ function MUILib:CreateWindow(opts)
 				row.Parent = c
 
 				local label = Instance.new("TextLabel")
-				label.Size = UDim2.new(1, -80, 1, 0)
+				label.Size = UDim2.new(1, -85, 1, 0)
 				label.BackgroundTransparency = 1
 				label.Text = text
 				label.TextSize = 13
@@ -536,7 +649,7 @@ function MUILib:CreateWindow(opts)
 
 				local btn = Instance.new("TextButton")
 				btn.Size = UDim2.new(0, 70, 0, 20)
-				btn.Position = UDim2.new(1, -70, 0.5, -10)
+				btn.Position = UDim2.new(1, -75, 0.5, -10)
 				btn.BackgroundColor3 = defaultTheme.SearchBackground
 				btn.AutoButtonColor = false
 				btn.Font = "Gotham"
@@ -730,7 +843,7 @@ function MUILib:Notify(opts)
 	titleLabel.Parent = frame
 
 	local textLabel = Instance.new("TextLabel")
-	textLabel.Size = UDim2.new(1, -60, 1, -48)
+	textLabel.Size = UDim2.new(1, -60, 1, -52)
 	textLabel.Position = UDim2.new(0, 52, 0, 32)
 	textLabel.BackgroundTransparency = 1
 	textLabel.Font = "Gotham"
@@ -750,7 +863,9 @@ function MUILib:Notify(opts)
 	progress.Parent = frame
 	round(progress, 2)
 
-	tween(frame, 0.2, {Position = UDim2.new(1, -20, 1, -20)})
+	frame.Size = UDim2.fromOffset(280, 72)
+	frame.BackgroundTransparency = 1
+	tween(frame, 0.3, {BackgroundTransparency = 0, Position = UDim2.new(1, -20, 1, -20)})
 
 	local elapsed = 0
 	local step = 0.03
@@ -763,8 +878,8 @@ function MUILib:Notify(opts)
 	end)
 
 	task.delay(duration, function()
-		tween(frame, 0.2, {Position = UDim2.new(1, -20, 1, 20)})
-		task.delay(0.25, function()
+		tween(frame, 0.3, {BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
+		task.delay(0.35, function()
 			if screen then
 				screen:Destroy()
 			end
