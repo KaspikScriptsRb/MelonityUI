@@ -5,15 +5,26 @@ local CoreGui = game:GetService("CoreGui")
 local MUILib = {}
 MUILib.__index = MUILib
 
+local defaultTheme = {
+	Background = Color3.fromRGB(24, 26, 34),
+	NavBackground = Color3.fromRGB(30, 32, 42),
+	PanelBackground = Color3.fromRGB(36, 38, 50),
+	PanelBorder = Color3.fromRGB(255, 80, 150),
+	Accent = Color3.fromRGB(255, 80, 150),
+	TextPrimary = Color3.fromRGB(245, 246, 255),
+	TextSecondary = Color3.fromRGB(185, 190, 205),
+	SearchBackground = Color3.fromRGB(32, 34, 44),
+}
+
 local Theme = {
-	MainBG = Color3.fromRGB(24, 25, 33),
-	SidebarBG = Color3.fromRGB(18, 19, 25),
-	TopBarBG = Color3.fromRGB(20, 21, 28),
-	PanelBG = Color3.fromRGB(30, 31, 40),
-	Accent = Color3.fromRGB(255, 46, 105),
+	MainBG = defaultTheme.Background,
+	SidebarBG = defaultTheme.NavBackground,
+	TopBarBG = defaultTheme.NavBackground,
+	PanelBG = defaultTheme.PanelBackground,
+	Accent = defaultTheme.Accent,
 	ToggleOn = Color3.fromRGB(46, 255, 113),
 	ToggleOff = Color3.fromRGB(255, 46, 69),
-	Text = Color3.fromRGB(255, 255, 255),
+	Text = defaultTheme.TextPrimary,
 	TextGray = Color3.fromRGB(130, 132, 142),
 	Border = Color3.fromRGB(45, 46, 55)
 }
@@ -74,7 +85,7 @@ function MUILib:CreateWindow(opts)
 	local searchH = Instance.new("Frame")
 	searchH.Size = UDim2.fromOffset(380, 28)
 	searchH.Position = UDim2.new(0, 50, 0.5, -14)
-	searchH.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+	searchH.BackgroundColor3 = defaultTheme.SearchBackground
 	searchH.Parent = top
 	round(searchH, 4)
 
@@ -142,7 +153,7 @@ function MUILib:CreateWindow(opts)
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, 0, 0, 60)
 	prof.Position = UDim2.new(0, 0, 1, -60)
-	prof.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+	prof.BackgroundColor3 = defaultTheme.SearchBackground
 	prof.Parent = sb
 
 	local av = Instance.new("ImageLabel")
