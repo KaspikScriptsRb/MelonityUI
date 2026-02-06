@@ -125,6 +125,14 @@ function MUILib:CreateWindow(opts)
 	top.Parent = main
 	round(top, 4)
 
+	-- Светлая разделительная линия между верхним интерфейсом и вкладками
+	local topSeparator = Instance.new("Frame")
+	topSeparator.Size = UDim2.new(1, 0, 0, 1)
+	topSeparator.Position = UDim2.new(0, 0, 0, 45)
+	topSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+	topSeparator.BorderSizePixel = 0
+	topSeparator.Parent = main
+
 	local logo = Instance.new("ImageLabel")
 	logo.Size = UDim2.fromOffset(24, 24)
 	logo.Position = UDim2.new(0, 15, 0.5, -12)
@@ -160,7 +168,7 @@ function MUILib:CreateWindow(opts)
 	gInp.TextColor3 = Theme.Text
 	gInp.Font = "GothamBold"
 	gInp.TextSize = 13
-	gInp.TextXAlignment = "Left"
+	gInp.TextXAlignment = "Center"
 	gInp.TextYAlignment = "Center"
 	gInp.Parent = searchH
 	gInp.ClearTextOnFocus = false
@@ -312,7 +320,8 @@ function MUILib:CreateWindow(opts)
 	navBox.TextColor3 = Theme.Text
 	navBox.Font = "GothamBold"
 	navBox.TextSize = 12
-	navBox.TextXAlignment = "Left"
+	navBox.TextXAlignment = "Center"
+	navBox.TextYAlignment = "Center"
 	navBox.ClearTextOnFocus = false
 	navBox.Parent = navSearch
 
@@ -375,7 +384,9 @@ function MUILib:CreateWindow(opts)
 		t.P.BackgroundTransparency = 1
 		t.P.BorderSizePixel = 0
 		t.P.Visible = false
+		-- Скролл есть, но сам скроллбар невидим
 		t.P.ScrollBarThickness = 4
+		t.P.ScrollBarImageTransparency = 1
 		t.P.Parent = ct
 		local tLayout = Instance.new("UIListLayout")
 		tLayout.Padding = UDim.new(0, 12)
@@ -400,7 +411,7 @@ function MUILib:CreateWindow(opts)
 		indicator.BorderSizePixel = 0
 		indicator.Visible = false
 		indicator.Parent = t.B
-		round(indicator, 1)
+		round(indicator, 3)
 		
 		t.B.MouseButton1Click:Connect(function()
 			for _, v in pairs(self.Tabs) do 
@@ -438,7 +449,7 @@ function MUILib:CreateWindow(opts)
 			ind.BackgroundColor3 = Theme.Accent
 			ind.BackgroundTransparency = 1
 			ind.Parent = e
-			round(ind, 2)
+			round(ind, 4)
 
 			-- Create content frame for this hero
 			local contentFrame = Instance.new("Frame")
@@ -476,24 +487,39 @@ function MUILib:CreateWindow(opts)
 			end)
 
 			e.MouseButton1Click:Connect(function()
-				if win.CurrentSideEntry and win.CurrentSideEntry ~= e then
-					local oldInd = win.CurrentSideEntry:FindFirstChildOfClass("Frame")
+				-- Сбросить старую выбранную подвкладку внутри этого таба
+				if t.CurrentSideEntry and t.CurrentSideEntry ~= e then
+					local oldInd = t.CurrentSideEntry:FindFirstChildOfClass("Frame")
 					if oldInd then
 						oldInd.BackgroundTransparency = 1
 					end
-					local oldContent = win.CurrentSideEntry:FindFirstChild("Content")
+					local oldContent = t.CurrentSideEntry:FindFirstChild("Content")
 					if oldContent then
 						oldContent.Visible = false
 					end
-					win.CurrentSideEntry.TextColor3 = Theme.TextGray
+					t.CurrentSideEntry.TextColor3 = Theme.TextGray
 				end
-				win.CurrentSideEntry = e
+
+				-- Скрыть все Content-фреймы этого таба (на случай, если что-то осталось видимым)
+				for _, child in ipairs(t.P:GetChildren()) do
+					if child:IsA("Frame") and child.Name == "Content" then
+						child.Visible = false
+					end
+				end
+
+				t.CurrentSideEntry = e
 				setSelected(true)
 			end)
 
-			-- first element immediately selected
-			if not win.CurrentSideEntry then
-				win.CurrentSideEntry = e
+			-- Первая подвкладка в этом табе выбирается по умолчанию
+			if not t.CurrentSideEntry then
+				-- перед выбором первой гарантированно скрываем все Content
+				for _, child in ipairs(t.P:GetChildren()) do
+					if child:IsA("Frame") and child.Name == "Content" then
+						child.Visible = false
+					end
+				end
+				t.CurrentSideEntry = e
 				setSelected(true)
 			end
 
@@ -505,7 +531,7 @@ function MUILib:CreateWindow(opts)
 				sf.BackgroundColor3 = Theme.PanelBG
 				sf.AutomaticSize = "Y"
 				sf.Parent = contentFrame
-				round(sf, 4)
+				round(sf, 6)
 				local l = Instance.new("Frame")
 				l.Size = UDim2.new(0, 3, 1, 0)
 				l.Position = UDim2.new(0, 0, 0, 0)
@@ -513,7 +539,7 @@ function MUILib:CreateWindow(opts)
 				l.BorderSizePixel = 0
 				l.Parent = sf
 				local corner = Instance.new("UICorner")
-				corner.CornerRadius = UDim.new(0, 2)
+				corner.CornerRadius = UDim.new(0, 4)
 				corner.Parent = l
 				local lt = Instance.new("TextLabel")
 				lt.Text = title
@@ -638,10 +664,11 @@ function MUILib:CreateWindow(opts)
 					valueLabel.Size = UDim2.new(0, 50, 1, 0)
 					valueLabel.Position = UDim2.new(1, -50, 0, 0)
 					valueLabel.BackgroundTransparency = 1
-					valueLabel.TextColor3 = Theme.TextGray
+					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
 					valueLabel.TextSize = 12
 					valueLabel.TextXAlignment = "Right"
+					valueLabel.TextYAlignment = "Center"
 					valueLabel.Parent = r
 
 					local bar = Instance.new("Frame")
