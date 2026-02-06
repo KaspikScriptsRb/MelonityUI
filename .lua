@@ -431,6 +431,8 @@ function MUILib:CreateWindow(opts)
 			contentFrame.Visible = false
 			contentFrame.Parent = t.P
 
+			local sideEntry = {}
+
 			local function setSelected(sel)
 				if sel then
 					e.TextColor3 = Theme.Text
@@ -477,8 +479,8 @@ function MUILib:CreateWindow(opts)
 				setSelected(true)
 			end
 
-			-- Override CreateSection to add to this hero's content frame
-			e.CreateSection = function(title)
+			-- CreateSection method for this side entry
+			function sideEntry:CreateSection(title)
 				local sec = {}
 				local sf = Instance.new("Frame")
 				sf.Size = UDim2.new(1, 0, 0, 0)
@@ -858,7 +860,7 @@ function MUILib:CreateWindow(opts)
 				return sec
 			end
 
-			return e
+			return sideEntry
 		end
 
 		return t
