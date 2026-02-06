@@ -141,7 +141,7 @@ function MUILib:CreateWindow(opts)
 
 	local searchH = Instance.new("Frame")
 	searchH.Size = UDim2.fromOffset(380, 28)
-	searchH.Position = UDim2.new(0, 50, 0.5, -14)
+	searchH.Position = UDim2.new(0.5, -190, 0.5, -14)
 	searchH.BackgroundColor3 = defaultTheme.SearchBackground
 	searchH.Parent = top
 	round(searchH, 4)
@@ -250,11 +250,11 @@ function MUILib:CreateWindow(opts)
 	end)
 
 	local th = Instance.new("Frame")
-	th.Size = UDim2.new(1, -16, 0, 36)
-	th.Position = UDim2.new(0, 8, 0, 49)
+	th.Size = UDim2.new(1, 0, 0, 36)
+	th.Position = UDim2.new(0, 0, 0, 49)
 	th.BackgroundColor3 = Theme.TopBarBG
 	th.Parent = main
-	round(th, 4)
+	round(th, 0)
 	local tl = Instance.new("UIListLayout")
 	tl.FillDirection = "Horizontal"
 	tl.Padding = UDim.new(0, 20)
@@ -364,7 +364,7 @@ function MUILib:CreateWindow(opts)
 	ct.Parent = main
 
 	function win:AddTopTab(name, icon)
-		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self}
+		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
 		t.P.Size = UDim2.new(1, -30, 1, -20)
 		t.P.Position = UDim2.new(0, 15, 0, 10)
 		t.P.BackgroundTransparency = 1
