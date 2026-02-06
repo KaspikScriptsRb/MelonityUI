@@ -71,14 +71,27 @@ function MUILib:CreateWindow(opts)
 	screen.Name = "MelonityUI"
 	screen.Parent = CoreGui
 
-	-- Animated loading screen
+	local draggingSlider = false
+
+	local main = Instance.new("Frame")
+	main.Size = UDim2.fromOffset(1100, 640)
+	main.Position = UDim2.new(0.5, 0, 0.5, 0)
+	main.AnchorPoint = Vector2.new(0.5, 0.5)
+	main.BackgroundColor3 = Theme.MainBG
+	main.BorderSizePixel = 0
+	main.ClipsDescendants = true
+	main.Parent = screen
+	round(main, 4)
+
+	-- Animated loading screen inside main window
 	local loadingScreen = Instance.new("Frame")
 	loadingScreen.Name = "LoadingScreen"
 	loadingScreen.Size = UDim2.new(1, 0, 1, 0)
 	loadingScreen.Position = UDim2.new(0, 0, 0, 0)
 	loadingScreen.BackgroundColor3 = Theme.MainBG
 	loadingScreen.BorderSizePixel = 0
-	loadingScreen.Parent = screen
+	loadingScreen.Parent = main
+	loadingScreen.ZIndex = 100
 
 	local loadingLogo = Instance.new("ImageLabel")
 	loadingLogo.Size = UDim2.fromOffset(48, 48)
@@ -86,6 +99,7 @@ function MUILib:CreateWindow(opts)
 	loadingLogo.BackgroundTransparency = 1
 	loadingLogo.Image = "rbxassetid://75683973301629"
 	loadingLogo.Parent = loadingScreen
+	loadingLogo.ZIndex = 101
 	round(loadingLogo, 24)
 
 	local loadingText = Instance.new("TextLabel")
@@ -97,6 +111,7 @@ function MUILib:CreateWindow(opts)
 	loadingText.Font = "GothamBold"
 	loadingText.TextSize = 14
 	loadingText.Parent = loadingScreen
+	loadingText.ZIndex = 101
 
 	local progressBg = Instance.new("Frame")
 	progressBg.Size = UDim2.new(0, 200, 0, 4)
@@ -104,6 +119,7 @@ function MUILib:CreateWindow(opts)
 	progressBg.BackgroundColor3 = Theme.MainBG
 	progressBg.BorderSizePixel = 0
 	progressBg.Parent = loadingScreen
+	progressBg.ZIndex = 101
 	round(progressBg, 2)
 
 	local progressFill = Instance.new("Frame")
@@ -111,19 +127,16 @@ function MUILib:CreateWindow(opts)
 	progressFill.BackgroundColor3 = Theme.Accent
 	progressFill.BorderSizePixel = 0
 	progressFill.Parent = progressBg
+	progressFill.ZIndex = 102
 	round(progressFill, 2)
 
 	-- Simulate loading progress
-	local progress = 0
-	local loadingComplete = false
 	spawn(function()
 		for i = 1, 100 do
-			progress = i / 100
-			progressFill.Size = UDim2.new(progress, 0, 1, 0)
+			progressFill.Size = UDim2.new(i / 100, 0, 1, 0)
 			loadingText.Text = "Загрузка... " .. i .. "%"
 			task.wait(0.02)
 		end
-		loadingComplete = true
 		-- Fade out loading screen
 		tween(loadingScreen, 0.3, {BackgroundTransparency = 1})
 		tween(loadingLogo, 0.3, {ImageTransparency = 1})
@@ -131,26 +144,8 @@ function MUILib:CreateWindow(opts)
 		tween(progressBg, 0.3, {BackgroundTransparency = 1})
 		task.delay(0.3, function()
 			loadingScreen:Destroy()
-			-- Show main window with animation
-			main.Size = UDim2.fromOffset(0, 0)
-			main.BackgroundTransparency = 1
-			main.Visible = true
-			tween(main, 0.4, {Size = UDim2.fromOffset(1100, 640), BackgroundTransparency = 0})
 		end)
 	end)
-
-	local draggingSlider = false
-
-	local main = Instance.new("Frame")
-	main.Size = UDim2.fromOffset(1100, 640)
-	main.Position = UDim2.new(0.5, 0, 0.5, 0)
-	main.AnchorPoint = Vector2.new(0.5, 0.5)
-	main.BackgroundColor3 = Theme.MainBG
-	main.BorderSizePixel = 0
-	main.ClipsDescendants = true
-	main.Parent = screen
-	main.Visible = false
-	round(main, 4)
 
 	local drag, start, pPos
 	main.InputBegan:Connect(function(i)
