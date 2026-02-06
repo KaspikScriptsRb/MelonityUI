@@ -478,6 +478,7 @@ function MUILib:CreateWindow(opts)
 			end
 
 			-- Override CreateSection to add to this hero's content frame
+			e.CreateSection = function(title)
 				local sec = {}
 				local sf = Instance.new("Frame")
 				sf.Size = UDim2.new(1, 0, 0, 0)
