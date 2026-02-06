@@ -574,6 +574,9 @@ function MUILib:CreateWindow(opts)
 				cp.PaddingBottom = UDim.new(0, 12)
 				cp.Parent = c
 
+				local RIGHT_COLUMN_WIDTH = 120
+				local RIGHT_COLUMN_MARGIN = 5
+
 				function sec:AddToggle(o)
 					o = o or {}
 					local r = Instance.new("Frame")
@@ -583,7 +586,7 @@ function MUILib:CreateWindow(opts)
 
 					local label = Instance.new("TextLabel")
 					label.Text = o.Text or "Toggle"
-					label.Size = UDim2.new(1, -55, 1, 0)
+					label.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 1, 0)
 					label.BackgroundTransparency = 1
 					label.TextColor3 = Theme.Text
 					label.Font = "GothamBold"
@@ -593,7 +596,7 @@ function MUILib:CreateWindow(opts)
 
 					if o.SubText then
 						local sub = Instance.new("TextLabel")
-						sub.Size = UDim2.new(1, -55, 0, 16)
+						sub.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 16)
 						sub.Position = UDim2.new(0, 0, 0, 20)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
@@ -607,7 +610,7 @@ function MUILib:CreateWindow(opts)
 
 					local bg = Instance.new("TextButton")
 					bg.Size = UDim2.new(0, 36, 0, 18)
-					bg.Position = UDim2.new(1, -45, 0.5, -9)
+					bg.Position = UDim2.new(1, -(36 + RIGHT_COLUMN_MARGIN), 0.5, -9)
 					bg.BackgroundColor3 = Theme.MainBG
 					bg.Text = ""
 					bg.Parent = r
@@ -646,6 +649,67 @@ function MUILib:CreateWindow(opts)
 					}
 				end
 
+				function sec:AddCheckBox(o)
+					o = o or {}
+					local text = o.Text or "CheckBox"
+					local default = o.Default or false
+					local callback = o.Callback or function() end
+
+					local row = Instance.new("Frame")
+					row.Size = UDim2.new(1, 0, 0, 22)
+					row.BackgroundTransparency = 1
+					row.Parent = c
+
+					local box = Instance.new("TextButton")
+					box.Size = UDim2.fromOffset(12, 12)
+					box.Position = UDim2.new(0, 0, 0.5, -6)
+					box.BackgroundColor3 = Theme.MainBG
+					box.AutoButtonColor = false
+					box.Text = ""
+					box.Parent = row
+					round(box, 3)
+
+					local stroke = addStroke(box, Theme.ToggleOff, 1.5)
+
+					local label = Instance.new("TextLabel")
+					label.Text = text
+					label.Size = UDim2.new(1, -20, 1, 0)
+					label.Position = UDim2.new(0, 20, 0, 0)
+					label.BackgroundTransparency = 1
+					label.TextColor3 = Theme.Text
+					label.Font = "GothamBold"
+					label.TextSize = 12
+					label.TextXAlignment = "Left"
+					label.Parent = row
+
+					local state = default
+
+					local function apply()
+						box.BackgroundColor3 = state and Theme.Accent or Theme.MainBG
+						stroke.Color = state and Theme.ToggleOn or Theme.ToggleOff
+						if callback then
+							callback(state)
+						end
+					end
+
+					box.MouseButton1Click:Connect(function()
+						state = not state
+						apply()
+					end)
+
+					apply()
+
+					return {
+						Set = function(v)
+							state = v and true or false
+							apply()
+						end,
+						Get = function()
+							return state
+						end,
+					}
+				end
+
 				function sec:AddSlider(o)
 					o = o or {}
 					local text = o.Text or "Slider"
@@ -661,7 +725,7 @@ function MUILib:CreateWindow(opts)
 
 					local label = Instance.new("TextLabel")
 					label.Text = text
-					label.Size = UDim2.new(1, -80, 1, 0)
+					label.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 1, 0)
 					label.BackgroundTransparency = 1
 					label.TextColor3 = Theme.Text
 					label.Font = "GothamBold"
@@ -670,8 +734,8 @@ function MUILib:CreateWindow(opts)
 					label.Parent = r
 
 					local valueLabel = Instance.new("TextLabel")
-					valueLabel.Size = UDim2.new(0, 50, 1, 0)
-					valueLabel.Position = UDim2.new(1, -60, 0, 0)
+					valueLabel.Size = UDim2.new(0, 40, 1, 0)
+					valueLabel.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 40), 0, 0)
 					valueLabel.BackgroundTransparency = 1
 					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
@@ -681,7 +745,7 @@ function MUILib:CreateWindow(opts)
 					valueLabel.Parent = r
 
 					local bar = Instance.new("Frame")
-					bar.Size = UDim2.new(1, -80, 0, 4)
+					bar.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 4)
 					bar.Position = UDim2.new(0, 0, 1, -6)
 					bar.BackgroundColor3 = Theme.MainBG
 					bar.BorderSizePixel = 0
