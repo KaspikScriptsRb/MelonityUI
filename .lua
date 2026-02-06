@@ -127,7 +127,7 @@ function MUILib:CreateWindow(opts)
 
 	-- Светлая разделительная линия между верхним интерфейсом и вкладками
 	local topSeparator = Instance.new("Frame")
-	topSeparator.Size = UDim2.new(1, 0, 0, 1)
+	topSeparator.Size = UDim2.new(1, 0, 0, 3)
 	topSeparator.Position = UDim2.new(0, 0, 0, 45)
 	topSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
 	topSeparator.BorderSizePixel = 0
@@ -320,7 +320,7 @@ function MUILib:CreateWindow(opts)
 	navBox.TextColor3 = Theme.Text
 	navBox.Font = "GothamBold"
 	navBox.TextSize = 12
-	navBox.TextXAlignment = "Center"
+	navBox.TextXAlignment = "Left"
 	navBox.TextYAlignment = "Center"
 	navBox.ClearTextOnFocus = false
 	navBox.Parent = navSearch
@@ -459,6 +459,9 @@ function MUILib:CreateWindow(opts)
 			contentFrame.BackgroundTransparency = 1
 			contentFrame.Visible = false
 			contentFrame.Parent = t.P
+			local cfLayout = Instance.new("UIListLayout")
+			cfLayout.Padding = UDim.new(0, 8)
+			cfLayout.Parent = contentFrame
 
 			local sideEntry = {}
 
@@ -1152,4 +1155,4 @@ function MUILib:Notify(opts)
 	end)
 end
 
-return MUILib
+return MUILib 
