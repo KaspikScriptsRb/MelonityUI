@@ -79,6 +79,7 @@ function MUILib:CreateWindow(opts)
 	main.AnchorPoint = Vector2.new(0.5, 0.5)
 	main.BackgroundColor3 = Theme.MainBG
 	main.BorderSizePixel = 0
+	main.ClipsDescendants = true
 	main.Parent = screen
 	round(main, 4)
 
@@ -211,6 +212,7 @@ function MUILib:CreateWindow(opts)
 	langMenu.Position = UDim2.new(1, -150, 0, 40)
 	langMenu.BackgroundColor3 = Theme.TopBarBG
 	langMenu.Visible = false
+	langMenu.ZIndex = 3
 	langMenu.Parent = top
 	round(langMenu, 4)
 
@@ -230,6 +232,7 @@ function MUILib:CreateWindow(opts)
 		b.TextColor3 = Theme.Text
 		b.TextXAlignment = "Left"
 		b.Text = text
+		b.ZIndex = 4
 		b.Parent = langMenu
 		b.MouseButton1Click:Connect(function()
 			currentLanguage = code
@@ -523,10 +526,11 @@ function MUILib:CreateWindow(opts)
 				c.BackgroundTransparency = 1
 				c.Parent = sf
 				local cl = Instance.new("UIListLayout")
-				cl.Padding = UDim.new(0, 8)
+				cl.Padding = UDim.new(0, 10)
 				cl.Parent = c
 				local cp = Instance.new("UIPadding")
-				cp.PaddingBottom = UDim.new(0, 8)
+				cp.PaddingTop = UDim.new(0, 6)
+				cp.PaddingBottom = UDim.new(0, 10)
 				cp.Parent = c
 
 				function sec:AddToggle(o)
@@ -571,13 +575,20 @@ function MUILib:CreateWindow(opts)
 					dot.Parent = bg
 					round(dot, 7)
 					local state = o.Default or false
+
 					local function update()
 						tween(bg, 0.2, {BackgroundColor3 = state and Theme.Accent or Theme.MainBG})
 						tween(dot, 0.2, {Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7), BackgroundColor3 = state and Theme.Text or Theme.TextGray})
 						if o.Callback then o.Callback(state) end
 					end
-					bg.MouseButton1Click:Connect(function() state = not state update() end)
+
+					bg.MouseButton1Click:Connect(function()
+						state = not state
+						update()
+					end)
+
 					update()
+
 					return {
 						Set = function(v)
 							state = v and true or false
@@ -589,7 +600,131 @@ function MUILib:CreateWindow(opts)
 					}
 				end
 
+				function sec:AddSlider(o)
+					o = o or {}
+					local text = o.Text or "Slider"
+					local min = o.Min or 0
+					local max = o.Max or 100
+					local default = math.clamp(o.Default or min, min, max)
+					local callback = o.Callback or function() end
+
+					local r = Instance.new("Frame")
+					r.Size = UDim2.new(1, 0, 0, 30)
+					r.BackgroundTransparency = 1
+					r.Parent = c
+
+					local label = Instance.new("TextLabel")
+					label.Text = text
+					label.Size = UDim2.new(1, -80, 1, 0)
+					label.BackgroundTransparency = 1
+					label.TextColor3 = Theme.Text
+					label.Font = "Gotham"
+					label.TextSize = 12
+					label.TextXAlignment = "Left"
+					label.Parent = r
+
+					local valueLabel = Instance.new("TextLabel")
+					valueLabel.Size = UDim2.new(0, 50, 1, 0)
+					valueLabel.Position = UDim2.new(1, -50, 0, 0)
+					valueLabel.BackgroundTransparency = 1
+					valueLabel.TextColor3 = Theme.TextGray
+					valueLabel.Font = "Gotham"
+					valueLabel.TextSize = 12
+					valueLabel.TextXAlignment = "Right"
+					valueLabel.Parent = r
+
+					local bar = Instance.new("Frame")
+					bar.Size = UDim2.new(1, -80, 0, 4)
+					bar.Position = UDim2.new(0, 0, 1, -6)
+					bar.BackgroundColor3 = Theme.MainBG
+					bar.BorderSizePixel = 0
+					bar.Parent = r
+					round(bar, 2)
+
+					local fill = Instance.new("Frame")
+					fill.Size = UDim2.new(0, 0, 1, 0)
+					fill.BackgroundColor3 = Theme.Accent
+					fill.BorderSizePixel = 0
+					fill.Parent = bar
+					round(fill, 2)
+
+					local knob = Instance.new("Frame")
+					knob.Size = UDim2.fromOffset(10, 10)
+					knob.AnchorPoint = Vector2.new(0.5, 0.5)
+					knob.Position = UDim2.new(0, 0, 0.5, 0)
+					knob.BackgroundColor3 = Theme.Text
+					knob.BorderSizePixel = 0
+					knob.Parent = bar
+					round(knob, 5)
+
+					local current = default
+
+					local function setVisual(v)
+						local alpha = (v - min) / (max - min)
+						alpha = math.clamp(alpha, 0, 1)
+						fill.Size = UDim2.new(alpha, 0, 1, 0)
+						knob.Position = UDim2.new(alpha, 0, 0.5, 0)
+						valueLabel.Text = tostring(math.floor(v))
+					end
+
+					local function setValueFromX(x)
+						local rel = math.clamp((x - bar.AbsolutePosition.X) / math.max(bar.AbsoluteSize.X, 1), 0, 1)
+						local v = min + (max - min) * rel
+						current = v
+						setVisual(v)
+						callback(v)
+					end
+
+					local function beginDrag(input)
+						draggingSlider = true
+						setValueFromX(input.Position.X)
+					end
+
+					local function endDrag()
+						draggingSlider = false
+					end
+
+					bar.InputBegan:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							beginDrag(input)
+						end
+					end)
+
+					knob.InputBegan:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							beginDrag(input)
+						end
+					end)
+
+					UserInputService.InputChanged:Connect(function(input)
+						if draggingSlider and input.UserInputType == Enum.UserInputType.MouseMovement then
+							setValueFromX(input.Position.X)
+						end
+					end)
+
+					UserInputService.InputEnded:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 then
+							endDrag()
+						end
+					end)
+
+					setVisual(current)
+					callback(current)
+
+					return {
+						Set = function(v)
+							current = math.clamp(v, min, max)
+							setVisual(current)
+							callback(current)
+						end,
+						Get = function()
+							return current
+						end,
+					}
+				end
+
 				function sec:AddItemToggle(o)
+					o = o or {}
 					if not c:FindFirstChild("Grid") then
 						local g = Instance.new("Frame")
 						g.Name = "Grid"
@@ -602,11 +737,13 @@ function MUILib:CreateWindow(opts)
 						gl.CellPadding = UDim2.fromOffset(6, 6)
 						gl.Parent = g
 					end
+
 					local b = Instance.new("TextButton")
 					b.BackgroundColor3 = Theme.MainBG
 					b.Text = ""
 					b.Parent = c.Grid
 					round(b, 4)
+
 					local s = addStroke(b, Theme.ToggleOff, 1.5)
 					local img = Instance.new("ImageLabel")
 					img.Size = UDim2.new(0.65, 0, 0.65, 0)
@@ -614,6 +751,7 @@ function MUILib:CreateWindow(opts)
 					img.BackgroundTransparency = 1
 					img.Image = o.Icon or ""
 					img.Parent = b
+
 					local state = o.Default or false
 
 					local function apply()
@@ -627,6 +765,7 @@ function MUILib:CreateWindow(opts)
 					end)
 
 					apply()
+
 					return {
 						Set = function(v)
 							state = v and true or false
@@ -653,19 +792,20 @@ function MUILib:CreateWindow(opts)
 					label.TextColor3 = bold and Theme.Text or Theme.TextGray
 					label.Parent = c
 
-				if o.SubText then
-					local sub = Instance.new("TextLabel")
-					sub.Size = UDim2.new(1, -12, 0, 16)
-					sub.Position = UDim2.new(0, 0, 0, 18)
-					sub.BackgroundTransparency = 1
-					sub.Text = resolveText(o.SubText)
-					sub.TextColor3 = Theme.TextGray
-					sub.Font = "GothamBold"
-					sub.TextSize = 11
-					sub.TextXAlignment = "Left"
-					sub.Parent = c
-					label.Size = UDim2.new(1, -12, 0, 18)
-				end
+					if o.SubText then
+						local sub = Instance.new("TextLabel")
+						sub.Size = UDim2.new(1, -12, 0, 16)
+						sub.Position = UDim2.new(0, 0, 0, 18)
+						sub.BackgroundTransparency = 1
+						sub.Text = resolveText(o.SubText)
+						sub.TextColor3 = Theme.TextGray
+						sub.Font = "GothamBold"
+						sub.TextSize = 11
+						sub.TextXAlignment = "Left"
+						sub.Parent = c
+						label.Size = UDim2.new(1, -12, 0, 18)
+					end
+
 					return label
 				end
 
@@ -734,19 +874,19 @@ function MUILib:CreateWindow(opts)
 					label.TextXAlignment = "Left"
 					label.Parent = row
 
-				if o.SubText then
-					local sub = Instance.new("TextLabel")
-					sub.Size = UDim2.new(1, -85, 0, 16)
-					sub.Position = UDim2.new(0, 0, 0, 18)
-					sub.BackgroundTransparency = 1
-					sub.Text = resolveText(o.SubText)
-					sub.TextColor3 = Theme.TextGray
-					sub.Font = "GothamBold"
-					sub.TextSize = 11
-					sub.TextXAlignment = "Left"
-					sub.Parent = row
-					row.Size = UDim2.new(1, 0, 0, 34)
-				end
+					if o.SubText then
+						local sub = Instance.new("TextLabel")
+						sub.Size = UDim2.new(1, -85, 0, 16)
+						sub.Position = UDim2.new(0, 0, 0, 18)
+						sub.BackgroundTransparency = 1
+						sub.Text = resolveText(o.SubText)
+						sub.TextColor3 = Theme.TextGray
+						sub.Font = "GothamBold"
+						sub.TextSize = 11
+						sub.TextXAlignment = "Left"
+						sub.Parent = row
+						row.Size = UDim2.new(1, 0, 0, 34)
+					end
 
 					local btn = Instance.new("TextButton")
 					btn.Size = UDim2.new(0, 60, 0, 20)
