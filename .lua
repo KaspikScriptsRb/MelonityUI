@@ -71,6 +71,74 @@ function MUILib:CreateWindow(opts)
 	screen.Name = "MelonityUI"
 	screen.Parent = CoreGui
 
+	-- Animated loading screen
+	local loadingScreen = Instance.new("Frame")
+	loadingScreen.Name = "LoadingScreen"
+	loadingScreen.Size = UDim2.new(1, 0, 1, 0)
+	loadingScreen.Position = UDim2.new(0, 0, 0, 0)
+	loadingScreen.BackgroundColor3 = Theme.MainBG
+	loadingScreen.BorderSizePixel = 0
+	loadingScreen.Parent = screen
+
+	local loadingLogo = Instance.new("ImageLabel")
+	loadingLogo.Size = UDim2.fromOffset(48, 48)
+	loadingLogo.Position = UDim2.new(0.5, -24, 0.5, -60)
+	loadingLogo.BackgroundTransparency = 1
+	loadingLogo.Image = "rbxassetid://75683973301629"
+	loadingLogo.Parent = loadingScreen
+	round(loadingLogo, 24)
+
+	local loadingText = Instance.new("TextLabel")
+	loadingText.Size = UDim2.new(1, 0, 0, 20)
+	loadingText.Position = UDim2.new(0, 0, 0.5, 0)
+	loadingText.BackgroundTransparency = 1
+	loadingText.Text = "Загрузка..."
+	loadingText.TextColor3 = Theme.Text
+	loadingText.Font = "GothamBold"
+	loadingText.TextSize = 14
+	loadingText.Parent = loadingScreen
+
+	local progressBg = Instance.new("Frame")
+	progressBg.Size = UDim2.new(0, 200, 0, 4)
+	progressBg.Position = UDim2.new(0.5, -100, 0.5, 30)
+	progressBg.BackgroundColor3 = Theme.MainBG
+	progressBg.BorderSizePixel = 0
+	progressBg.Parent = loadingScreen
+	round(progressBg, 2)
+
+	local progressFill = Instance.new("Frame")
+	progressFill.Size = UDim2.new(0, 0, 1, 0)
+	progressFill.BackgroundColor3 = Theme.Accent
+	progressFill.BorderSizePixel = 0
+	progressFill.Parent = progressBg
+	round(progressFill, 2)
+
+	-- Simulate loading progress
+	local progress = 0
+	local loadingComplete = false
+	spawn(function()
+		for i = 1, 100 do
+			progress = i / 100
+			progressFill.Size = UDim2.new(progress, 0, 1, 0)
+			loadingText.Text = "Загрузка... " .. i .. "%"
+			task.wait(0.02)
+		end
+		loadingComplete = true
+		-- Fade out loading screen
+		tween(loadingScreen, 0.3, {BackgroundTransparency = 1})
+		tween(loadingLogo, 0.3, {ImageTransparency = 1})
+		tween(loadingText, 0.3, {TextTransparency = 1})
+		tween(progressBg, 0.3, {BackgroundTransparency = 1})
+		task.delay(0.3, function()
+			loadingScreen:Destroy()
+			-- Show main window with animation
+			main.Size = UDim2.fromOffset(0, 0)
+			main.BackgroundTransparency = 1
+			main.Visible = true
+			tween(main, 0.4, {Size = UDim2.fromOffset(1100, 640), BackgroundTransparency = 0})
+		end)
+	end)
+
 	local draggingSlider = false
 
 	local main = Instance.new("Frame")
@@ -81,6 +149,7 @@ function MUILib:CreateWindow(opts)
 	main.BorderSizePixel = 0
 	main.ClipsDescendants = true
 	main.Parent = screen
+	main.Visible = false
 	round(main, 4)
 
 	local drag, start, pPos
@@ -166,9 +235,10 @@ function MUILib:CreateWindow(opts)
 	gInp.PlaceholderText = "Search sections"
 	gInp.PlaceholderColor3 = Theme.TextGray
 	gInp.TextColor3 = Theme.Text
+	gInp.TextTransparency = 0
 	gInp.Font = "GothamBold"
 	gInp.TextSize = 13
-	gInp.TextXAlignment = "Center"
+	gInp.TextXAlignment = "Left"
 	gInp.TextYAlignment = "Center"
 	gInp.Parent = searchH
 	gInp.ClearTextOnFocus = false
@@ -259,7 +329,16 @@ function MUILib:CreateWindow(opts)
 	local menuOpen = false
 	langButton.MouseButton1Click:Connect(function()
 		menuOpen = not menuOpen
-		langMenu.Visible = menuOpen
+		if menuOpen then
+			langMenu.Visible = true
+			langMenu.Size = UDim2.new(0, 120, 0, 0)
+			tween(langMenu, 0.2, {Size = UDim2.new(0, 120, 0, 56)})
+		else
+			tween(langMenu, 0.2, {Size = UDim2.new(0, 120, 0, 0)})
+			task.delay(0.2, function()
+				langMenu.Visible = false
+			end)
+		end
 	end)
 
 	local th = Instance.new("Frame")
@@ -276,9 +355,9 @@ function MUILib:CreateWindow(opts)
 	Instance.new("UIPadding", th).PaddingLeft = UDim.new(0, 20)
 
 	local sb = Instance.new("Frame")
-	sb.Size = UDim2.new(0, 220, 1, -85)
-	sb.Position = UDim2.new(0, 0, 0, 85)
-	sb.BackgroundColor3 = Theme.SidebarBG
+	sb.Size = UDim2.new(0, 220, 1, -49)
+	sb.Position = UDim2.new(0, 0, 0, 49)
+	sb.BackgroundColor3 = Theme.PanelBG
 	sb.Parent = main
 	round(sb, 4)
 
@@ -310,6 +389,25 @@ function MUILib:CreateWindow(opts)
 	navSearch.ZIndex = 10
 	navSearch.Parent = sb
 	round(navSearch, 4)
+
+	local navTitle = Instance.new("TextLabel")
+	navTitle.Text = "Навигация"
+	navTitle.Size = UDim2.new(1, -30, 0, 18)
+	navTitle.Position = UDim2.new(0, 15, 0, 16)
+	navTitle.BackgroundTransparency = 1
+	navTitle.TextColor3 = Theme.Text
+	navTitle.Font = "GothamBold"
+	navTitle.TextSize = 13
+	navTitle.TextXAlignment = "Left"
+	navTitle.Parent = sb
+
+	local navUnderline = Instance.new("Frame")
+	navUnderline.Size = UDim2.new(0, 60, 0, 3)
+	navUnderline.Position = UDim2.new(0, 15, 0, 32)
+	navUnderline.BackgroundColor3 = Theme.Accent
+	navUnderline.BorderSizePixel = 0
+	navUnderline.Parent = sb
+	round(navUnderline, 6)
 	local navBox = Instance.new("TextBox")
 	navBox.Size = UDim2.new(1, -10, 1, 0)
 	navBox.Position = UDim2.new(0, 5, 0, 0)
@@ -318,6 +416,7 @@ function MUILib:CreateWindow(opts)
 	navBox.PlaceholderText = "Search heroes"
 	navBox.PlaceholderColor3 = Theme.TextGray
 	navBox.TextColor3 = Theme.Text
+	navBox.TextTransparency = 0
 	navBox.Font = "GothamBold"
 	navBox.TextSize = 12
 	navBox.TextXAlignment = "Left"
@@ -341,6 +440,13 @@ function MUILib:CreateWindow(opts)
 	prof.BackgroundColor3 = defaultTheme.SearchBackground
 	prof.Parent = sb
 	round(prof, 4)
+
+	local sideDivider = Instance.new("Frame")
+	sideDivider.Size = UDim2.new(0, 3, 1, -49)
+	sideDivider.Position = UDim2.new(1, -3, 0, 49)
+	sideDivider.BackgroundColor3 = Theme.Border
+	sideDivider.BorderSizePixel = 0
+	sideDivider.Parent = sb
 
 	local av = Instance.new("ImageLabel")
 	av.Size = UDim2.fromOffset(36, 36)
@@ -415,13 +521,20 @@ function MUILib:CreateWindow(opts)
 		
 		t.B.MouseButton1Click:Connect(function()
 			for _, v in pairs(self.Tabs) do 
-				v.P.Visible = false 
+				if v.P.Visible then
+					tween(v.P, 0.15, {BackgroundTransparency = 1})
+					task.delay(0.15, function()
+						v.P.Visible = false
+					end)
+				end
 				v.B.TextColor3 = Theme.TextGray
 				if v.B:FindFirstChild("Indicator") then
 					v.B.Indicator.Visible = false
 				end
 			end
+			t.P.BackgroundTransparency = 1
 			t.P.Visible = true 
+			tween(t.P, 0.15, {BackgroundTransparency = 0})
 			t.B.TextColor3 = Theme.Accent
 			t.B.Indicator.Visible = true
 		end)
@@ -474,23 +587,25 @@ function MUILib:CreateWindow(opts)
 			local function setSelected(sel)
 				if sel then
 					e.TextColor3 = Theme.Text
+					e.BackgroundTransparency = 0
 					ind.BackgroundTransparency = 0
 					contentFrame.Visible = true
 				else
 					e.TextColor3 = Theme.TextGray
+					e.BackgroundTransparency = 1
 					ind.BackgroundTransparency = 1
 					contentFrame.Visible = false
 				end
 			end
 
 			e.MouseEnter:Connect(function()
-				if win.CurrentSideEntry ~= e then
+				if t.CurrentSideEntry ~= e then
 					tween(e, 0.15, {TextColor3 = Theme.Text})
 				end
 			end)
 
 			e.MouseLeave:Connect(function()
-				if win.CurrentSideEntry ~= e then
+				if t.CurrentSideEntry ~= e then
 					tween(e, 0.15, {TextColor3 = Theme.TextGray})
 				end
 			end)
@@ -500,13 +615,16 @@ function MUILib:CreateWindow(opts)
 				if t.CurrentSideEntry and t.CurrentSideEntry ~= e then
 					local oldInd = t.CurrentSideEntry:FindFirstChildOfClass("Frame")
 					if oldInd then
-						oldInd.BackgroundTransparency = 1
+						tween(oldInd, 0.15, {BackgroundTransparency = 1})
 					end
 					local oldContent = t.CurrentSideEntry:FindFirstChild("Content")
 					if oldContent then
-						oldContent.Visible = false
+						tween(oldContent, 0.15, {BackgroundTransparency = 1})
+						task.delay(0.15, function()
+							oldContent.Visible = false
+						end)
 					end
-					t.CurrentSideEntry.TextColor3 = Theme.TextGray
+					tween(t.CurrentSideEntry, 0.15, {TextColor3 = Theme.TextGray, BackgroundTransparency = 1})
 				end
 
 				-- Скрыть все Content-фреймы этого таба (на случай, если что-то осталось видимым)
@@ -517,7 +635,11 @@ function MUILib:CreateWindow(opts)
 				end
 
 				t.CurrentSideEntry = e
-				setSelected(true)
+				contentFrame.BackgroundTransparency = 1
+				contentFrame.Visible = true
+				tween(contentFrame, 0.15, {BackgroundTransparency = 0})
+				tween(e, 0.15, {TextColor3 = Theme.Text, BackgroundTransparency = 0})
+				tween(ind, 0.15, {BackgroundTransparency = 0})
 			end)
 
 			-- Первая подвкладка в этом табе выбирается по умолчанию
@@ -597,7 +719,7 @@ function MUILib:CreateWindow(opts)
 					if o.SubText then
 						local sub = Instance.new("TextLabel")
 						sub.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 16)
-						sub.Position = UDim2.new(0, 0, 0, 20)
+						sub.Position = UDim2.new(0, 0, 0, 24)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
 						sub.TextColor3 = Theme.TextGray
@@ -605,7 +727,7 @@ function MUILib:CreateWindow(opts)
 						sub.TextSize = 11
 						sub.TextXAlignment = "Left"
 						sub.Parent = r
-						r.Size = UDim2.new(1, 0, 0, 38)
+						r.Size = UDim2.new(1, 0, 0, 40)
 					end
 
 					local bg = Instance.new("TextButton")
@@ -685,8 +807,8 @@ function MUILib:CreateWindow(opts)
 					local state = default
 
 					local function apply()
-						box.BackgroundColor3 = state and Theme.Accent or Theme.MainBG
-						stroke.Color = state and Theme.ToggleOn or Theme.ToggleOff
+						tween(box, 0.2, {BackgroundColor3 = state and Theme.Accent or Theme.MainBG})
+						tween(stroke, 0.2, {Color = state and Theme.ToggleOn or Theme.ToggleOff})
 						if callback then
 							callback(state)
 						end
@@ -735,7 +857,7 @@ function MUILib:CreateWindow(opts)
 
 					local valueLabel = Instance.new("TextLabel")
 					valueLabel.Size = UDim2.new(0, 40, 1, 0)
-					valueLabel.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 40), 0, 0)
+					valueLabel.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 55), 0, 0)
 					valueLabel.BackgroundTransparency = 1
 					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
@@ -990,8 +1112,8 @@ function MUILib:CreateWindow(opts)
 
 					if o.SubText then
 						local sub = Instance.new("TextLabel")
-						sub.Size = UDim2.new(1, -85, 0, 16)
-						sub.Position = UDim2.new(0, 0, 0, 20)
+						sub.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 16)
+						sub.Position = UDim2.new(0, 0, 0, 24)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
 						sub.TextColor3 = Theme.TextGray
@@ -999,7 +1121,7 @@ function MUILib:CreateWindow(opts)
 						sub.TextSize = 11
 						sub.TextXAlignment = "Left"
 						sub.Parent = row
-						row.Size = UDim2.new(1, 0, 0, 38)
+						row.Size = UDim2.new(1, 0, 0, 40)
 					end
 
 					local btn = Instance.new("TextButton")
@@ -1022,18 +1144,17 @@ function MUILib:CreateWindow(opts)
 					end
 					resizeForText()
 
-					btn.MouseEnter:Connect(function()
-						tween(btn, 0.12, {BackgroundColor3 = Theme.PanelBG})
-					end)
-					btn.MouseLeave:Connect(function()
-						tween(btn, 0.12, {BackgroundColor3 = defaultTheme.SearchBackground})
-					end)
-
 					local capturing = false
 					local captureConn
 
 					btn.MouseButton1Click:Connect(function()
-						if capturing then return end
+						if capturing then
+							capturing = false
+							if captureConn then captureConn:Disconnect() end
+							btn.Text = key and key.Name or "None"
+							resizeForText()
+							return
+						end
 						capturing = true
 						btn.Text = "..."
 						resizeForText()
