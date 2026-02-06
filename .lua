@@ -662,7 +662,7 @@ function MUILib:CreateWindow(opts)
 
 					local valueLabel = Instance.new("TextLabel")
 					valueLabel.Size = UDim2.new(0, 50, 1, 0)
-					valueLabel.Position = UDim2.new(1, -50, 0, 0)
+					valueLabel.Position = UDim2.new(1, -60, 0, 0)
 					valueLabel.BackgroundTransparency = 1
 					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
@@ -969,7 +969,8 @@ function MUILib:CreateWindow(opts)
 							if gp then return end
 							if input.KeyCode == Enum.KeyCode.Escape then
 								capturing = false
-								btn.Text = key.Name
+								key = nil
+								btn.Text = "None"
 								resizeForText()
 								captureConn:Disconnect()
 								return
@@ -986,7 +987,7 @@ function MUILib:CreateWindow(opts)
 
 					UserInputService.InputBegan:Connect(function(input, gp)
 						if gp then return end
-						if input.KeyCode == key then
+						if key and input.KeyCode == key then
 							callback()
 						end
 					end)
@@ -1030,7 +1031,8 @@ function MUILib:CreateWindow(opts)
 					box.TextColor3 = Theme.Text
 					box.Font = "GothamBold"
 					box.TextSize = 12
-					box.TextXAlignment = "Left"
+					box.TextXAlignment = "Center"
+					box.TextYAlignment = "Center"
 					box.Parent = r
 					round(box, 4)
 
