@@ -380,7 +380,7 @@ function MUILib:CreateWindow(opts)
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
 		t.P.Size = UDim2.new(1, -30, 1, -20)
-		t.P.Position = UDim2.new(0, 15, 0, 10)
+		t.P.Position = UDim2.new(0, 15, 0, 30)
 		t.P.BackgroundTransparency = 1
 		t.P.BorderSizePixel = 0
 		t.P.Visible = false
@@ -411,7 +411,7 @@ function MUILib:CreateWindow(opts)
 		indicator.BorderSizePixel = 0
 		indicator.Visible = false
 		indicator.Parent = t.B
-		round(indicator, 3)
+		round(indicator, 6)
 		
 		t.B.MouseButton1Click:Connect(function()
 			for _, v in pairs(self.Tabs) do 
@@ -449,7 +449,9 @@ function MUILib:CreateWindow(opts)
 			ind.BackgroundColor3 = Theme.Accent
 			ind.BackgroundTransparency = 1
 			ind.Parent = e
-			round(ind, 4)
+			local indCorner = Instance.new("UICorner")
+			indCorner.CornerRadius = UDim.new(0, 6)
+			indCorner.Parent = ind
 
 			-- Create content frame for this hero
 			local contentFrame = Instance.new("Frame")
@@ -462,6 +464,10 @@ function MUILib:CreateWindow(opts)
 			local cfLayout = Instance.new("UIListLayout")
 			cfLayout.Padding = UDim.new(0, 8)
 			cfLayout.Parent = contentFrame
+			local cfPadding = Instance.new("UIPadding")
+			cfPadding.PaddingTop = UDim.new(0, 20)
+			cfPadding.PaddingBottom = UDim.new(0, 20)
+			cfPadding.Parent = contentFrame
 
 			local sideEntry = {}
 
@@ -530,7 +536,7 @@ function MUILib:CreateWindow(opts)
 			function sideEntry:CreateSection(title)
 				local sec = {}
 				local sf = Instance.new("Frame")
-				sf.Size = UDim2.new(1, 0, 0, 0)
+				sf.Size = UDim2.new(1, -24, 0, 0)
 				sf.BackgroundColor3 = Theme.PanelBG
 				sf.AutomaticSize = "Y"
 				sf.Parent = contentFrame
@@ -542,7 +548,7 @@ function MUILib:CreateWindow(opts)
 				l.BorderSizePixel = 0
 				l.Parent = sf
 				local corner = Instance.new("UICorner")
-				corner.CornerRadius = UDim.new(0, 4)
+				corner.CornerRadius = UDim.new(0, 6)
 				corner.Parent = l
 				local lt = Instance.new("TextLabel")
 				lt.Text = title
