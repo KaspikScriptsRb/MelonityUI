@@ -356,17 +356,6 @@ function MUILib:CreateWindow(opts)
 	sb.Parent = main
 	round(sb, 4)
 
-	local navT = Instance.new("TextLabel")
-	navT.Text = "Навигация"
-	navT.Size = UDim2.new(1, -30, 0, 40)
-	navT.Position = UDim2.new(0, 15, 0, 5)
-	navT.BackgroundTransparency = 1
-	navT.TextColor3 = Theme.Text
-	navT.Font = "GothamBold"
-	navT.TextSize = 14
-	navT.TextXAlignment = "Left"
-	navT.Parent = sb
-
 	local ns = Instance.new("ScrollingFrame")
 	ns.Size = UDim2.new(1, 0, 1, -126)
 	ns.Position = UDim2.new(0, 0, 0, 71)
@@ -475,6 +464,7 @@ function MUILib:CreateWindow(opts)
 	local ct = Instance.new("Frame")
 	ct.Size = UDim2.new(1, -220, 1, -49)
 	ct.Position = UDim2.new(0, 220, 0, 49)
+	ct.BackgroundColor3 = Theme.MainBG
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
 
@@ -482,7 +472,8 @@ function MUILib:CreateWindow(opts)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
 		t.P.Size = UDim2.new(1, -30, 1, -20)
 		t.P.Position = UDim2.new(0, 15, 0, 30)
-		t.P.BackgroundTransparency = 1
+		t.P.BackgroundColor3 = Theme.MainBG
+		t.P.BackgroundTransparency = 0
 		t.P.BorderSizePixel = 0
 		t.P.Visible = false
 		-- Скролл есть, но сам скроллбар невидим
@@ -574,7 +565,6 @@ function MUILib:CreateWindow(opts)
 			cfLayout.Parent = contentFrame
 			local cfPadding = Instance.new("UIPadding")
 			cfPadding.PaddingTop = UDim.new(0, 20)
-			cfPadding.PaddingBottom = UDim.new(0, 20)
 			cfPadding.Parent = contentFrame
 
 			local sideEntry = {}
@@ -582,11 +572,13 @@ function MUILib:CreateWindow(opts)
 			local function setSelected(sel)
 				if sel then
 					e.TextColor3 = Theme.Text
+					e.BackgroundColor3 = Theme.PanelBG
 					e.BackgroundTransparency = 0
 					ind.BackgroundTransparency = 0
 					contentFrame.Visible = true
 				else
 					e.TextColor3 = Theme.TextGray
+					e.BackgroundColor3 = Theme.PanelBG
 					e.BackgroundTransparency = 1
 					ind.BackgroundTransparency = 1
 					contentFrame.Visible = false
@@ -630,10 +622,11 @@ function MUILib:CreateWindow(opts)
 				end
 
 				t.CurrentSideEntry = e
+				contentFrame.BackgroundColor3 = Theme.PanelBG
 				contentFrame.BackgroundTransparency = 1
 				contentFrame.Visible = true
 				tween(contentFrame, 0.15, {BackgroundTransparency = 0})
-				tween(e, 0.15, {TextColor3 = Theme.Text, BackgroundTransparency = 0})
+				tween(e, 0.15, {BackgroundColor3 = Theme.PanelBG, TextColor3 = Theme.Text, BackgroundTransparency = 0})
 				tween(ind, 0.15, {BackgroundTransparency = 0})
 			end)
 
@@ -1319,7 +1312,8 @@ function MUILib:Notify(opts)
 
 	frame.Size = UDim2.fromOffset(280, 72)
 	frame.BackgroundTransparency = 1
-	tween(frame, 0.3, {BackgroundTransparency = 0, Position = UDim2.new(1, -20, 1, -20)})
+	frame.Size = UDim2.fromOffset(0, 72)
+	tween(frame, 0.4, {Size = UDim2.fromOffset(280, 72), BackgroundTransparency = 0, Position = UDim2.new(1, -20, 1, -20)})
 
 	local elapsed = 0
 	local step = 0.03
@@ -1332,8 +1326,8 @@ function MUILib:Notify(opts)
 	end)
 
 	task.delay(duration, function()
-		tween(frame, 0.3, {BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
-		task.delay(0.35, function()
+		tween(frame, 0.4, {Size = UDim2.fromOffset(0, 72), BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
+		task.delay(0.45, function()
 			if screen then
 				screen:Destroy()
 			end
