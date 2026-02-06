@@ -86,6 +86,10 @@ function MUILib:CreateWindow(opts)
 	local drag, start, pPos
 	main.InputBegan:Connect(function(i)
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
+			-- Разрешаем перетаскивание только при клике в зоне верхней панели,
+			-- чтобы слайдеры и другие элементы не двигали всё окно
+			local topLimitY = main.AbsolutePosition.Y + 45
+			if i.Position.Y > topLimitY then return end
 			drag = true
 			start = i.Position
 			pPos = main.Position
@@ -157,6 +161,7 @@ function MUILib:CreateWindow(opts)
 	gInp.Font = "GothamBold"
 	gInp.TextSize = 13
 	gInp.TextXAlignment = "Left"
+	gInp.TextYAlignment = "Center"
 	gInp.Parent = searchH
 	gInp.ClearTextOnFocus = false
 	gInp.FocusLost:Connect(function()
@@ -370,7 +375,7 @@ function MUILib:CreateWindow(opts)
 		t.P.BackgroundTransparency = 1
 		t.P.BorderSizePixel = 0
 		t.P.Visible = false
-		t.P.ScrollBarThickness = 0
+		t.P.ScrollBarThickness = 4
 		t.P.Parent = ct
 		local tLayout = Instance.new("UIListLayout")
 		tLayout.Padding = UDim.new(0, 12)
