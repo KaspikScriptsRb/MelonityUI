@@ -10,104 +10,7 @@ local activeNotifies = {}
 local notifyOffset = 0
 local notifySpacing = 85
 
-function MUILib:Notify(opts)
-	opts = opts or {}
-	local title = opts.Title or "Melonity"
-	local text = opts.Text or "Notification"
-	local duration = opts.Duration or 3
-
-	local screen = Instance.new("ScreenGui")
-	screen.Name = "MelonityNotify"
-	screen.ResetOnSpawn = false
-	screen.ZIndexBehavior = Enum.ZIndexBehavior.Global
-	screen.Parent = CoreGui
-
-	local frame = Instance.new("Frame")
-	frame.Size = UDim2.fromOffset(280, 72)
-	frame.AnchorPoint = Vector2.new(1, 1)
-	frame.Position = UDim2.new(1, -20, 1, -20 - notifyOffset)
-	frame.BackgroundColor3 = defaultTheme.PanelBackground
-	frame.BorderSizePixel = 0
-	frame.BackgroundTransparency = 1
-	frame.Parent = screen
-	round(frame, 6)
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = defaultTheme.Accent
-	stroke.Thickness = 1
-	stroke.Parent = frame
-
-	local logo = Instance.new("ImageLabel")
-	logo.Size = UDim2.fromOffset(32, 32)
-	logo.Position = UDim2.new(0, 10, 0, 10)
-	logo.BackgroundTransparency = 1
-	logo.Image = "rbxassetid://75683973301629"
-	logo.Parent = frame
-	round(logo, 16)
-
-	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -60, 0, 20)
-	titleLabel.Position = UDim2.new(0, 52, 0, 10)
-	titleLabel.BackgroundTransparency = 1
-	titleLabel.Font = "GothamBold"
-	titleLabel.Text = title
-	titleLabel.TextSize = 14
-	titleLabel.TextColor3 = defaultTheme.TextPrimary
-	titleLabel.TextXAlignment = "Left"
-	titleLabel.Parent = frame
-
-	local textLabel = Instance.new("TextLabel")
-	textLabel.Size = UDim2.new(1, -60, 1, -52)
-	textLabel.Position = UDim2.new(0, 52, 0, 32)
-	textLabel.BackgroundTransparency = 1
-	textLabel.Font = "Gotham"
-	textLabel.TextWrapped = true
-	textLabel.Text = text
-	textLabel.TextSize = 12
-	textLabel.TextColor3 = defaultTheme.TextSecondary
-	textLabel.TextXAlignment = "Left"
-	textLabel.TextYAlignment = "Top"
-	textLabel.Parent = frame
-
-	local progress = Instance.new("Frame")
-	progress.Size = UDim2.new(1, 0, 0, 3)
-	progress.Position = UDim2.new(0, 0, 1, -3)
-	progress.BackgroundColor3 = defaultTheme.Accent
-	progress.BorderSizePixel = 0
-	progress.Parent = frame
-	round(progress, 2)
-
-	tween(frame, 0.3, {BackgroundTransparency = 0, Position = UDim2.new(1, -20, 1, -20 - notifyOffset)})
-
-	notifyOffset = notifyOffset + notifySpacing
-	table.insert(activeNotifies, screen)
-
-	local elapsed = 0
-	local step = 0.03
-	task.spawn(function()
-		while elapsed < duration do
-			task.wait(step)
-			elapsed = elapsed + step
-			progress.Size = UDim2.new(1 - (elapsed / duration), 0, 0, 3)
-		end
-	end)
-
-	task.delay(duration, function()
-		tween(frame, 0.3, {BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
-		task.delay(0.35, function()
-			if screen then
-				screen:Destroy()
-				for i, s in pairs(activeNotifies) do
-					if s == screen then
-						table.remove(activeNotifies, i)
-						break
-					end
-				end
-				notifyOffset = notifyOffset - notifySpacing
-			end
-		end)
-	end)
-end
+local currentLanguage = "ru" -- "ru" or "en"
 
 local defaultTheme = {
 	Background = Color3.fromRGB(40, 42, 54),
@@ -265,15 +168,74 @@ function MUILib:CreateWindow(opts)
 		end
 	end)
 
-	local lang = Instance.new("TextLabel")
-	lang.Size = UDim2.new(0, 120, 1, 0)
-	lang.Position = UDim2.new(1, -150, 0, 0)
-	lang.BackgroundTransparency = 1
-	lang.Text = "🇷🇺 Русский  ▼"
-	lang.TextColor3 = Theme.TextGray
-	lang.Font = "GothamMedium"
-	lang.TextSize = 12
-	lang.Parent = top
+	local langButton = Instance.new("TextButton")
+	langButton.Size = UDim2.new(0, 120, 0, 24)
+	langButton.Position = UDim2.new(1, -150, 0.5, -12)
+	langButton.BackgroundColor3 = defaultTheme.SearchBackground
+	langButton.AutoButtonColor = false
+	langButton.Text = ""
+	langButton.Parent = top
+	round(langButton, 4)
+
+	local langLabel = Instance.new("TextLabel")
+	langLabel.Size = UDim2.new(1, -10, 1, 0)
+	langLabel.Position = UDim2.new(0, 8, 0, 0)
+	langLabel.BackgroundTransparency = 1
+	langLabel.TextColor3 = Theme.Text
+	langLabel.Font = "GothamMedium"
+	langLabel.TextSize = 12
+	langLabel.TextXAlignment = "Left"
+	langLabel.Parent = langButton
+
+	local function updateLangLabel()
+		if currentLanguage == "ru" then
+			langLabel.Text = "🇷🇺 Русский  ▼"
+		else
+			langLabel.Text = "🇬🇧 English  ▼"
+		end
+	end
+	updateLangLabel()
+
+	local langMenu = Instance.new("Frame")
+	langMenu.Size = UDim2.new(0, 120, 0, 56)
+	langMenu.Position = UDim2.new(1, -150, 0, 40)
+	langMenu.BackgroundColor3 = Theme.TopBarBG
+	langMenu.Visible = false
+	langMenu.Parent = top
+	round(langMenu, 4)
+
+	local langLayout = Instance.new("UIListLayout")
+	langLayout.FillDirection = Enum.FillDirection.Vertical
+	langLayout.Padding = UDim.new(0, 2)
+	langLayout.Parent = langMenu
+
+	local function createLangOption(text, code)
+		local b = Instance.new("TextButton")
+		b.Size = UDim2.new(1, 0, 0, 26)
+		b.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+		b.BackgroundTransparency = 0.8
+		b.AutoButtonColor = false
+		b.Font = "GothamMedium"
+		b.TextSize = 12
+		b.TextColor3 = Theme.Text
+		b.TextXAlignment = "Left"
+		b.Text = text
+		b.Parent = langMenu
+		b.MouseButton1Click:Connect(function()
+			currentLanguage = code
+			updateLangLabel()
+			langMenu.Visible = false
+		end)
+	end
+
+	createLangOption("🇷🇺 Русский", "ru")
+	createLangOption("🇬🇧 English", "en")
+
+	local menuOpen = false
+	langButton.MouseButton1Click:Connect(function()
+		menuOpen = not menuOpen
+		langMenu.Visible = menuOpen
+	end)
 
 	local th = Instance.new("Frame")
 	th.Size = UDim2.new(1, -16, 0, 36)
@@ -460,13 +422,24 @@ function MUILib:CreateWindow(opts)
 			ind.Parent = e
 			round(ind, 2)
 
+			-- Create content frame for this hero
+			local contentFrame = Instance.new("Frame")
+			contentFrame.Name = "Content"
+			contentFrame.Size = UDim2.new(1, 0, 0, 0)
+			contentFrame.AutomaticSize = "Y"
+			contentFrame.BackgroundTransparency = 1
+			contentFrame.Visible = false
+			contentFrame.Parent = t.P
+
 			local function setSelected(sel)
 				if sel then
 					e.TextColor3 = Theme.Text
 					ind.BackgroundTransparency = 0
+					contentFrame.Visible = true
 				else
 					e.TextColor3 = Theme.TextGray
 					ind.BackgroundTransparency = 1
+					contentFrame.Visible = false
 				end
 			end
 
@@ -488,384 +461,408 @@ function MUILib:CreateWindow(opts)
 					if oldInd then
 						oldInd.BackgroundTransparency = 1
 					end
+					local oldContent = win.CurrentSideEntry:FindFirstChild("Content")
+					if oldContent then
+						oldContent.Visible = false
+					end
 					win.CurrentSideEntry.TextColor3 = Theme.TextGray
 				end
 				win.CurrentSideEntry = e
 				setSelected(true)
 			end)
 
-			-- первый элемент сразу выбран
+			-- first element immediately selected
 			if not win.CurrentSideEntry then
 				win.CurrentSideEntry = e
 				setSelected(true)
 			end
 
+			-- Override CreateSection to add to this hero's content frame
+				local sec = {}
+				local sf = Instance.new("Frame")
+				sf.Size = UDim2.new(1, 0, 0, 0)
+				sf.BackgroundColor3 = Theme.PanelBG
+				sf.AutomaticSize = "Y"
+				sf.Parent = contentFrame
+				round(sf, 4)
+				local l = Instance.new("Frame")
+				l.Size = UDim2.new(0, 3, 1, 0)
+				l.Position = UDim2.new(0, 0, 0, 0)
+				l.BackgroundColor3 = Theme.Accent
+				l.Parent = sf
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 2)
+				corner.Parent = l
+				local lt = Instance.new("TextLabel")
+				lt.Text = title
+				lt.Size = UDim2.new(1, -20, 0, 40)
+				lt.Position = UDim2.new(0, 15, 0, 0)
+				lt.BackgroundTransparency = 1
+				lt.TextColor3 = Theme.Text
+				lt.Font = "GothamBold"
+				lt.TextSize = 13
+				lt.TextXAlignment = "Left"
+				lt.Parent = sf
+				local c = Instance.new("Frame")
+				c.Size = UDim2.new(1, -24, 0, 0)
+				c.Position = UDim2.new(0, 12, 0, 40)
+				c.AutomaticSize = "Y"
+				c.BackgroundTransparency = 1
+				c.Parent = sf
+				local cl = Instance.new("UIListLayout")
+				cl.Padding = UDim.new(0, 8)
+				cl.Parent = c
+				local cp = Instance.new("UIPadding")
+				cp.PaddingBottom = UDim.new(0, 8)
+				cp.Parent = c
+
+				function sec:AddToggle(o)
+					local r = Instance.new("Frame")
+					r.Size = UDim2.new(1, 0, 0, 26)
+					r.BackgroundTransparency = 1
+					r.Parent = c
+					local label = Instance.new("TextLabel")
+					label.Text = o.Text
+					label.Size = UDim2.new(1, -55, 1, 0)
+					label.BackgroundTransparency = 1
+					label.TextColor3 = Theme.Text
+					label.Font = "Gotham"
+					label.TextSize = 12
+					label.TextXAlignment = "Left"
+					label.Parent = r
+
+				if o.SubText then
+					local sub = Instance.new("TextLabel")
+					sub.Size = UDim2.new(1, -55, 0, 16)
+					sub.Position = UDim2.new(0, 0, 0, 16)
+					sub.BackgroundTransparency = 1
+					sub.Text = resolveText(o.SubText)
+					sub.TextColor3 = Theme.TextGray
+					sub.Font = "GothamBold"
+					sub.TextSize = 11
+					sub.TextXAlignment = "Left"
+					sub.Parent = r
+					r.Size = UDim2.new(1, 0, 0, 34)
+				end
+					local bg = Instance.new("TextButton")
+					bg.Size = UDim2.new(0, 36, 0, 18)
+					bg.Position = UDim2.new(1, -45, 0.5, -9)
+					bg.BackgroundColor3 = Theme.MainBG
+					bg.Text = ""
+					bg.Parent = r
+					round(bg, 9)
+					local dot = Instance.new("Frame")
+					dot.Size = UDim2.fromOffset(14, 14)
+					dot.Position = UDim2.new(0, 2, 0.5, -7)
+					dot.BackgroundColor3 = Theme.TextGray
+					dot.Parent = bg
+					round(dot, 7)
+					local state = o.Default or false
+					local function update()
+						tween(bg, 0.2, {BackgroundColor3 = state and Theme.Accent or Theme.MainBG})
+						tween(dot, 0.2, {Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7), BackgroundColor3 = state and Theme.Text or Theme.TextGray})
+						if o.Callback then o.Callback(state) end
+					end
+					bg.MouseButton1Click:Connect(function() state = not state update() end)
+					update()
+					return {
+						Set = function(v)
+							state = v and true or false
+							update()
+						end,
+						Get = function()
+							return state
+						end,
+					}
+				end
+
+				function sec:AddItemToggle(o)
+					if not c:FindFirstChild("Grid") then
+						local g = Instance.new("Frame")
+						g.Name = "Grid"
+						g.Size = UDim2.new(1, -12, 0, 0)
+						g.AutomaticSize = "Y"
+						g.BackgroundTransparency = 1
+						g.Parent = c
+						local gl = Instance.new("UIGridLayout")
+						gl.CellSize = UDim2.fromOffset(38, 38)
+						gl.CellPadding = UDim2.fromOffset(6, 6)
+						gl.Parent = g
+					end
+					local b = Instance.new("TextButton")
+					b.BackgroundColor3 = Theme.MainBG
+					b.Text = ""
+					b.Parent = c.Grid
+					round(b, 4)
+					local s = addStroke(b, Theme.ToggleOff, 1.5)
+					local img = Instance.new("ImageLabel")
+					img.Size = UDim2.new(0.65, 0, 0.65, 0)
+					img.Position = UDim2.new(0.175, 0, 0.175, 0)
+					img.BackgroundTransparency = 1
+					img.Image = o.Icon or ""
+					img.Parent = b
+					local state = o.Default or false
+
+					local function apply()
+						tween(s, 0.2, {Color = state and Theme.ToggleOn or Theme.ToggleOff})
+						if o.Callback then o.Callback(state) end
+					end
+
+					b.MouseButton1Click:Connect(function()
+						state = not state
+						apply()
+					end)
+
+					apply()
+					return {
+						Set = function(v)
+							state = v and true or false
+							apply()
+						end,
+						Get = function()
+							return state
+						end,
+					}
+				end
+
+				function sec:AddLabel(o)
+					o = o or {}
+					local text = o.Text or "Label"
+					local bold = o.Bold or false
+					local label = Instance.new("TextLabel")
+					label.Name = "Label"
+					label.Size = UDim2.new(1, -12, 0, 20)
+					label.BackgroundTransparency = 1
+					label.Text = text
+					label.TextSize = 13
+					label.TextXAlignment = "Left"
+					label.Font = bold and "GothamBold" or "Gotham"
+					label.TextColor3 = bold and Theme.Text or Theme.TextGray
+					label.Parent = c
+
+				if o.SubText then
+					local sub = Instance.new("TextLabel")
+					sub.Size = UDim2.new(1, -12, 0, 16)
+					sub.Position = UDim2.new(0, 0, 0, 18)
+					sub.BackgroundTransparency = 1
+					sub.Text = resolveText(o.SubText)
+					sub.TextColor3 = Theme.TextGray
+					sub.Font = "GothamBold"
+					sub.TextSize = 11
+					sub.TextXAlignment = "Left"
+					sub.Parent = c
+					label.Size = UDim2.new(1, -12, 0, 18)
+				end
+					return label
+				end
+
+				function sec:AddParagraph(o)
+					o = o or {}
+					local text = o.Text or "Paragraph"
+					local label = Instance.new("TextLabel")
+					label.Name = "Paragraph"
+					label.Size = UDim2.new(1, -12, 0, 0)
+					label.AutomaticSize = "Y"
+					label.BackgroundTransparency = 1
+					label.TextWrapped = true
+					label.Text = text
+					label.TextSize = 12
+					label.TextXAlignment = "Left"
+					label.TextYAlignment = "Top"
+					label.Font = "Gotham"
+					label.TextColor3 = Theme.TextGray
+					label.Parent = c
+					return label
+				end
+
+				function sec:AddButton(o)
+					o = o or {}
+					local text = o.Text or "Button"
+					local callback = o.Callback or function() end
+					local button = Instance.new("TextButton")
+					button.Name = "Button"
+					button.Size = UDim2.new(0, 115, 0, 26)
+					button.BackgroundColor3 = defaultTheme.SearchBackground
+					button.Text = text
+					button.TextSize = 13
+					button.Font = "GothamSemibold"
+					button.TextColor3 = Theme.Text
+					button.AutoButtonColor = false
+					button.Parent = c
+					round(button, 4)
+					button.MouseEnter:Connect(function()
+						tween(button, 0.12, {BackgroundColor3 = Theme.PanelBG})
+					end)
+					button.MouseLeave:Connect(function()
+						tween(button, 0.12, {BackgroundColor3 = defaultTheme.SearchBackground})
+					end)
+					button.MouseButton1Click:Connect(callback)
+					return button
+				end
+
+				function sec:AddBind(o)
+					o = o or {}
+					local text = o.Text or "Bind"
+					local key = o.DefaultKey or Enum.KeyCode.F
+					local callback = o.Callback or function() end
+
+					local row = Instance.new("Frame")
+					row.Size = UDim2.new(1, 0, 0, 26)
+					row.BackgroundTransparency = 1
+					row.Parent = c
+
+					local label = Instance.new("TextLabel")
+					label.Text = text
+					label.Size = UDim2.new(1, -85, 1, 0)
+					label.BackgroundTransparency = 1
+					label.TextColor3 = Theme.Text
+					label.Font = "Gotham"
+					label.TextSize = 13
+					label.TextXAlignment = "Left"
+					label.Parent = row
+
+				if o.SubText then
+					local sub = Instance.new("TextLabel")
+					sub.Size = UDim2.new(1, -85, 0, 16)
+					sub.Position = UDim2.new(0, 0, 0, 18)
+					sub.BackgroundTransparency = 1
+					sub.Text = resolveText(o.SubText)
+					sub.TextColor3 = Theme.TextGray
+					sub.Font = "GothamBold"
+					sub.TextSize = 11
+					sub.TextXAlignment = "Left"
+					sub.Parent = row
+					row.Size = UDim2.new(1, 0, 0, 34)
+				end
+
+					local btn = Instance.new("TextButton")
+					btn.Size = UDim2.new(0, 60, 0, 20)
+					btn.Position = UDim2.new(1, -65, 0.5, -10)
+					btn.BackgroundColor3 = defaultTheme.SearchBackground
+					btn.AutoButtonColor = false
+					btn.Font = "GothamBold"
+					btn.TextSize = 12
+					btn.TextColor3 = Theme.Text
+					btn.Text = key.Name
+					btn.Parent = row
+					round(btn, 4)
+
+					local function resizeForText()
+						local textLen = #btn.Text
+						local w = math.clamp(40 + textLen * 6, 50, 110)
+						btn.Size = UDim2.new(0, w, 0, 20)
+						btn.Position = UDim2.new(1, -w, 0.5, -10)
+					end
+					resizeForText()
+
+					btn.MouseEnter:Connect(function()
+						tween(btn, 0.12, {BackgroundColor3 = Theme.PanelBG})
+					end)
+					btn.MouseLeave:Connect(function()
+						tween(btn, 0.12, {BackgroundColor3 = defaultTheme.SearchBackground})
+					end)
+
+					local capturing = false
+					local captureConn
+
+					btn.MouseButton1Click:Connect(function()
+						if capturing then return end
+						capturing = true
+						btn.Text = "..."
+						resizeForText()
+						if captureConn then captureConn:Disconnect() end
+						captureConn = UserInputService.InputBegan:Connect(function(input, gp)
+							if gp then return end
+							if input.KeyCode == Enum.KeyCode.Escape then
+								capturing = false
+								btn.Text = key.Name
+								resizeForText()
+								captureConn:Disconnect()
+								return
+							end
+							if input.KeyCode ~= Enum.KeyCode.Unknown then
+								key = input.KeyCode
+								btn.Text = key.Name
+								resizeForText()
+								capturing = false
+								captureConn:Disconnect()
+							end
+						end)
+					end)
+
+					UserInputService.InputBegan:Connect(function(input, gp)
+						if gp then return end
+						if input.KeyCode == key then
+							callback()
+						end
+					end)
+
+					return {
+						GetKey = function() return key end,
+						SetKey = function(k) key = k btn.Text = key.Name end,
+					}
+				end
+
+				function sec:AddTextBox(o)
+					o = o or {}
+					local text = o.Text or "TextBox"
+					local placeholder = o.Placeholder or "Enter text..."
+					local default = o.Default or ""
+					local callback = o.Callback or function() end
+
+					local r = Instance.new("Frame")
+					r.Size = UDim2.new(1, 0, 0, 30)
+					r.BackgroundTransparency = 1
+					r.Parent = c
+
+					local label = Instance.new("TextLabel")
+					label.Text = text
+					label.Size = UDim2.new(1, -120, 1, 0)
+					label.BackgroundTransparency = 1
+					label.TextColor3 = Theme.Text
+					label.Font = "Gotham"
+					label.TextSize = 12
+					label.TextXAlignment = "Left"
+					label.Parent = r
+
+					local box = Instance.new("TextBox")
+					box.Size = UDim2.new(0, 115, 0, 20)
+					box.Position = UDim2.new(1, -120, 0.5, -10)
+					box.BackgroundColor3 = defaultTheme.SearchBackground
+					box.ClearTextOnFocus = false
+					box.Text = default
+					box.PlaceholderText = placeholder
+					box.PlaceholderColor3 = Theme.TextGray
+					box.TextColor3 = Theme.Text
+					box.Font = "Gotham"
+					box.TextSize = 12
+					box.TextXAlignment = "Left"
+					box.Parent = r
+					round(box, 4)
+
+					box.FocusLost:Connect(function()
+						callback(box.Text)
+					end)
+
+					return {
+						Set = function(v)
+							box.Text = tostring(v)
+						end,
+						Get = function()
+							return box.Text
+						end,
+					}
+				end
+
+				return sec
+			end
+
 			return e
 		end
 
-		function t:CreateSection(title)
-			local sec = {}
-			local sf = Instance.new("Frame")
-			sf.Size = UDim2.new(1, 0, 0, 0)
-			sf.BackgroundColor3 = Theme.PanelBG
-			sf.AutomaticSize = "Y"
-			sf.Parent = t.P
-			round(sf, 4)
-			local l = Instance.new("Frame")
-			l.Size = UDim2.new(0, 3, 1, 0)
-			l.Position = UDim2.new(0, 0, 0, 0)
-			l.BackgroundColor3 = Theme.Accent
-			l.Parent = sf
-			local corner = Instance.new("UICorner")
-			corner.CornerRadius = UDim.new(0, 2)
-			corner.Parent = l
-			local lt = Instance.new("TextLabel")
-			lt.Text = title
-			lt.Size = UDim2.new(1, -20, 0, 40)
-			lt.Position = UDim2.new(0, 15, 0, 0)
-			lt.BackgroundTransparency = 1
-			lt.TextColor3 = Theme.Text
-			lt.Font = "GothamBold"
-			lt.TextSize = 13
-			lt.TextXAlignment = "Left"
-			lt.Parent = sf
-			local c = Instance.new("Frame")
-			c.Size = UDim2.new(1, -24, 0, 0)
-			c.Position = UDim2.new(0, 12, 0, 40)
-			c.AutomaticSize = "Y"
-			c.BackgroundTransparency = 1
-			c.Parent = sf
-			local cl = Instance.new("UIListLayout")
-			cl.Padding = UDim.new(0, 8)
-			cl.Parent = c
-			local cp = Instance.new("UIPadding")
-			cp.PaddingBottom = UDim.new(0, 8)
-			cp.Parent = c
-
-			function sec:AddToggle(o)
-				local r = Instance.new("Frame")
-				r.Size = UDim2.new(1, 0, 0, 26)
-				r.BackgroundTransparency = 1
-				r.Parent = c
-				local label = Instance.new("TextLabel")
-				label.Text = o.Text
-				label.Size = UDim2.new(1, -55, 1, 0)
-				label.BackgroundTransparency = 1
-				label.TextColor3 = Theme.Text
-				label.Font = "Gotham"
-				label.TextSize = 12
-				label.TextXAlignment = "Left"
-				label.Parent = r
-				local bg = Instance.new("TextButton")
-				bg.Size = UDim2.new(0, 36, 0, 18)
-				bg.Position = UDim2.new(1, -45, 0.5, -9)
-				bg.BackgroundColor3 = Theme.MainBG
-				bg.Text = ""
-				bg.Parent = r
-				round(bg, 9)
-				local dot = Instance.new("Frame")
-				dot.Size = UDim2.fromOffset(14, 14)
-				dot.Position = UDim2.new(0, 2, 0.5, -7)
-				dot.BackgroundColor3 = Theme.TextGray
-				dot.Parent = bg
-				round(dot, 7)
-				local state = o.Default or false
-				local function update()
-					tween(bg, 0.2, {BackgroundColor3 = state and Theme.Accent or Theme.MainBG})
-					tween(dot, 0.2, {Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7), BackgroundColor3 = state and Theme.Text or Theme.TextGray})
-					if o.Callback then o.Callback(state) end
-				end
-				bg.MouseButton1Click:Connect(function() state = not state update() end)
-				update()
-				return {
-					Set = function(v)
-						state = v and true or false
-						update()
-					end,
-					Get = function()
-						return state
-					end,
-				}
-			end
-
-			function sec:AddItemToggle(o)
-				if not c:FindFirstChild("Grid") then
-					local g = Instance.new("Frame")
-					g.Name = "Grid"
-					g.Size = UDim2.new(1, -12, 0, 0)
-					g.AutomaticSize = "Y"
-					g.BackgroundTransparency = 1
-					g.Parent = c
-					local gl = Instance.new("UIGridLayout")
-					gl.CellSize = UDim2.fromOffset(38, 38)
-					gl.CellPadding = UDim2.fromOffset(6, 6)
-					gl.Parent = g
-				end
-				local b = Instance.new("TextButton")
-				b.BackgroundColor3 = Theme.MainBG
-				b.Text = ""
-				b.Parent = c.Grid
-				round(b, 4)
-				local s = addStroke(b, Theme.ToggleOff, 1.5)
-				local img = Instance.new("ImageLabel")
-				img.Size = UDim2.new(0.65, 0, 0.65, 0)
-				img.Position = UDim2.new(0.175, 0, 0.175, 0)
-				img.BackgroundTransparency = 1
-				img.Image = o.Icon or ""
-				img.Parent = b
-				local state = o.Default or false
-
-				local function apply()
-					tween(s, 0.2, {Color = state and Theme.ToggleOn or Theme.ToggleOff})
-					if o.Callback then o.Callback(state) end
-				end
-
-				b.MouseButton1Click:Connect(function()
-					state = not state
-					apply()
-				end)
-
-				apply()
-				return {
-					Set = function(v)
-						state = v and true or false
-						apply()
-					end,
-					Get = function()
-						return state
-					end,
-				}
-			end
-
-			function sec:AddLabel(o)
-				o = o or {}
-				local text = o.Text or "Label"
-				local bold = o.Bold or false
-				local label = Instance.new("TextLabel")
-				label.Name = "Label"
-				label.Size = UDim2.new(1, -12, 0, 20)
-				label.BackgroundTransparency = 1
-				label.Text = text
-				label.TextSize = 13
-				label.TextXAlignment = "Left"
-				label.Font = bold and "GothamBold" or "Gotham"
-				label.TextColor3 = bold and Theme.Text or Theme.TextGray
-				label.Parent = c
-				return label
-			end
-
-			function sec:AddParagraph(o)
-				o = o or {}
-				local text = o.Text or "Paragraph"
-				local label = Instance.new("TextLabel")
-				label.Name = "Paragraph"
-				label.Size = UDim2.new(1, -12, 0, 0)
-				label.AutomaticSize = "Y"
-				label.BackgroundTransparency = 1
-				label.TextWrapped = true
-				label.Text = text
-				label.TextSize = 12
-				label.TextXAlignment = "Left"
-				label.TextYAlignment = "Top"
-				label.Font = "Gotham"
-				label.TextColor3 = Theme.TextGray
-				label.Parent = c
-				return label
-			end
-
-			function sec:AddButton(o)
-				o = o or {}
-				local text = o.Text or "Button"
-				local callback = o.Callback or function() end
-				local button = Instance.new("TextButton")
-				button.Name = "Button"
-				button.Size = UDim2.new(0, 115, 0, 26)
-				button.BackgroundColor3 = defaultTheme.SearchBackground
-				button.Text = text
-				button.TextSize = 13
-				button.Font = "GothamSemibold"
-				button.TextColor3 = Theme.Text
-				button.AutoButtonColor = false
-				button.Parent = c
-				round(button, 4)
-				button.MouseEnter:Connect(function()
-					tween(button, 0.12, {BackgroundColor3 = Theme.PanelBG})
-				end)
-				button.MouseLeave:Connect(function()
-					tween(button, 0.12, {BackgroundColor3 = defaultTheme.SearchBackground})
-				end)
-				button.MouseButton1Click:Connect(callback)
-				return button
-			end
-
-			function sec:AddBind(o)
-				o = o or {}
-				local text = o.Text or "Bind"
-				local key = o.DefaultKey or Enum.KeyCode.F
-				local callback = o.Callback or function() end
-
-				local row = Instance.new("Frame")
-				row.Size = UDim2.new(1, 0, 0, 26)
-				row.BackgroundTransparency = 1
-				row.Parent = c
-
-				local label = Instance.new("TextLabel")
-				label.Size = UDim2.new(1, -85, 1, 0)
-				label.BackgroundTransparency = 1
-				label.Text = text
-				label.TextSize = 13
-				label.TextXAlignment = "Left"
-				label.Font = "Gotham"
-				label.TextColor3 = Theme.Text
-				label.Parent = row
-
-				local btn = Instance.new("TextButton")
-				btn.Size = UDim2.new(0, 70, 0, 20)
-				btn.Position = UDim2.new(1, -75, 0.5, -10)
-				btn.BackgroundColor3 = defaultTheme.SearchBackground
-				btn.AutoButtonColor = false
-				btn.Font = "Gotham"
-				btn.TextSize = 12
-				btn.TextColor3 = Theme.Text
-				btn.Text = key.Name
-				btn.Parent = row
-				round(btn, 4)
-
-				local capturing = false
-
-				btn.MouseButton1Click:Connect(function()
-					if capturing then return end
-					capturing = true
-					btn.Text = "..."
-					local conn
-					conn = UserInputService.InputBegan:Connect(function(input, gp)
-						if gp then return end
-						if input.KeyCode ~= Enum.KeyCode.Unknown then
-							key = input.KeyCode
-							btn.Text = key.Name
-							capturing = false
-							conn:Disconnect()
-						end
-					end)
-				end)
-
-				UserInputService.InputBegan:Connect(function(input, gp)
-					if gp then return end
-					if input.KeyCode == key then
-						callback()
-					end
-				end)
-
-				return {
-					GetKey = function() return key end,
-					SetKey = function(k) key = k btn.Text = key.Name end,
-				}
-			end
-
-			function sec:AddSlider(o)
-				o = o or {}
-				local min = typeof(o.Min) == "number" and o.Min or 0
-				local max = typeof(o.Max) == "number" and o.Max or 100
-				if max <= min then max = min + 1 end
-				local value = typeof(o.Default) == "number" and o.Default or min
-				value = math.clamp(value, min, max)
-
-				local r = Instance.new("Frame")
-				r.Size = UDim2.new(1, 0, 0, 40)
-				r.BackgroundTransparency = 1
-				r.Parent = c
-				local tl = Instance.new("TextLabel")
-				tl.Text = o.Text or "Slider"
-				tl.Size = UDim2.new(1, 0, 0, 15)
-				tl.BackgroundTransparency = 1
-				tl.TextColor3 = Theme.Text
-				tl.Font = "Gotham"
-				tl.TextSize = 12
-				tl.TextXAlignment = "Left"
-				tl.Parent = r
-				local vL = Instance.new("TextLabel")
-				vL.Text = tostring(value)
-				vL.Size = UDim2.new(0, 40, 0, 20)
-				vL.Position = UDim2.new(1, -40, 0.5, 0)
-				vL.BackgroundColor3 = Theme.MainBG
-				vL.TextColor3 = Theme.Text
-				vL.Font = "Gotham"
-				vL.TextSize = 11
-				vL.Parent = r
-				round(vL, 4)
-				local bar = Instance.new("Frame")
-				bar.Size = UDim2.new(1, -50, 0, 4)
-				bar.Position = UDim2.new(0, 0, 0.7, 0)
-				bar.BackgroundColor3 = Theme.MainBG
-				bar.Parent = r
-				round(bar, 2)
-				local fill = Instance.new("Frame")
-				local startAlpha = (value - min) / (max - min)
-				fill.Size = UDim2.new(startAlpha, 0, 1, 0)
-				fill.BackgroundColor3 = Theme.Accent
-				fill.Parent = bar
-				round(fill, 2)
-				local h = Instance.new("Frame")
-				h.Size = UDim2.fromOffset(12, 12)
-				h.AnchorPoint = Vector2.new(0.5, 0.5)
-				h.Position = UDim2.new(startAlpha, 0, 0.5, 0)
-				h.BackgroundColor3 = Theme.Text
-				h.Parent = bar
-				round(h, 6)
-				local drag = false
-
-				local function setFromAlpha(a)
-					a = math.clamp(a, 0, 1)
-					local v = min + (max - min) * a
-					v = math.floor(v + 0.5)
-					value = v
-					fill.Size = UDim2.new(a, 0, 1, 0)
-					h.Position = UDim2.new(a, 0, 0.5, 0)
-					vL.Text = tostring(v)
-					if o.Callback then o.Callback(v) end
-				end
-
-				local function up(i)
-					local p = math.clamp((i.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
-					setFromAlpha(p)
-				end
-
-				h.InputBegan:Connect(function(i)
-					if i.UserInputType == Enum.UserInputType.MouseButton1 then
-						drag = true
-						-- отключаем скролл таба пока двигаем слайдер
-						if t.P and t.P:IsA("ScrollingFrame") then
-							t.P.ScrollingEnabled = false
-						end
-					end
-				end)
-				UserInputService.InputEnded:Connect(function(i)
-					if i.UserInputType == Enum.UserInputType.MouseButton1 then
-						drag = false
-						if t.P and t.P:IsA("ScrollingFrame") then
-							t.P.ScrollingEnabled = true
-						end
-					end
-				end)
-				UserInputService.InputChanged:Connect(function(i)
-					if drag and i.UserInputType == Enum.UserInputType.MouseMovement then up(i) end
-				end)
-				return {
-					Set = function(v)
-						v = math.clamp(v, min, max)
-						local a = (v - min) / (max - min)
-						setFromAlpha(a)
-					end,
-					Get = function()
-						return value
-					end,
-				}
-			end
-
-			return sec
-		end
-		return t
+		return win
 	end
+
 	return win
 end
 
