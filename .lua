@@ -861,7 +861,7 @@ function MUILib:CreateWindow(opts)
 			return e
 		end
 
-		return win
+		return t
 	end
 
 	return win
