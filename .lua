@@ -12,6 +12,16 @@ local notifySpacing = 85
 
 local currentLanguage = "ru" -- "ru" or "en"
 
+local function resolveText(text)
+	if type(text) == "table" then
+		return text[currentLanguage] or text["en"] or text["ru"] or ""
+	elseif type(text) == "string" then
+		return text
+	else
+		return tostring(text)
+	end
+end
+
 local defaultTheme = {
 	Background = Color3.fromRGB(40, 42, 54),
 	NavBackground = Color3.fromRGB(46, 48, 60),
