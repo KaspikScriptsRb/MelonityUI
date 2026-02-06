@@ -85,7 +85,6 @@ function MUILib:CreateWindow(opts)
 
 	local drag, start, pPos
 	main.InputBegan:Connect(function(i)
-		if draggingSlider then return end
 		if i.UserInputType == Enum.UserInputType.MouseButton1 then
 			drag = true
 			start = i.Position
@@ -155,7 +154,7 @@ function MUILib:CreateWindow(opts)
 	gInp.PlaceholderText = "Search sections"
 	gInp.PlaceholderColor3 = Theme.TextGray
 	gInp.TextColor3 = Theme.Text
-	gInp.Font = "GothamMedium"
+	gInp.Font = "GothamBold"
 	gInp.TextSize = 13
 	gInp.TextXAlignment = "Left"
 	gInp.Parent = searchH
@@ -282,8 +281,8 @@ function MUILib:CreateWindow(opts)
 	navT.Parent = sb
 
 	local ns = Instance.new("ScrollingFrame")
-	ns.Size = UDim2.new(1, 0, 1, -100)
-	ns.Position = UDim2.new(0, 0, 0, 45)
+	ns.Size = UDim2.new(1, 0, 1, -126)
+	ns.Position = UDim2.new(0, 0, 0, 71)
 	ns.BackgroundTransparency = 1
 	ns.BorderSizePixel = 0
 	ns.ScrollBarThickness = 0
@@ -306,7 +305,7 @@ function MUILib:CreateWindow(opts)
 	navBox.PlaceholderText = "Search heroes"
 	navBox.PlaceholderColor3 = Theme.TextGray
 	navBox.TextColor3 = Theme.Text
-	navBox.Font = "GothamMedium"
+	navBox.Font = "GothamBold"
 	navBox.TextSize = 12
 	navBox.TextXAlignment = "Left"
 	navBox.ClearTextOnFocus = false
@@ -343,7 +342,7 @@ function MUILib:CreateWindow(opts)
 	uN.Position = UDim2.new(0, 60, 0.5, -10)
 	uN.BackgroundTransparency = 1
 	uN.TextColor3 = Theme.Text
-	uN.Font = "GothamMedium"
+	uN.Font = "GothamBold"
 	uN.TextSize = 13
 	uN.TextXAlignment = "Left"
 	uN.Parent = prof
@@ -359,8 +358,8 @@ function MUILib:CreateWindow(opts)
 	end
 
 	local ct = Instance.new("Frame")
-	ct.Size = UDim2.new(1, -220, 1, -85)
-	ct.Position = UDim2.new(0, 220, 0, 85)
+	ct.Size = UDim2.new(1, -220, 1, -49)
+	ct.Position = UDim2.new(0, 220, 0, 49)
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
 
@@ -385,13 +384,13 @@ function MUILib:CreateWindow(opts)
 		t.B.Text = (icon and "   " or "") .. name:upper()
 		t.B.TextColor3 = Theme.TextGray
 		t.B.Font = "GothamBold"
-		t.B.TextSize = 11
+		t.B.TextSize = 13
 		t.B.Parent = th
 		
 		local indicator = Instance.new("Frame")
 		indicator.Name = "Indicator"
-		indicator.Size = UDim2.new(1, 0, 0, 2)
-		indicator.Position = UDim2.new(0, 0, 1, -2)
+		indicator.Size = UDim2.new(1, 0, 0, 3)
+		indicator.Position = UDim2.new(0, 0, 1, -3)
 		indicator.BackgroundColor3 = Theme.Accent
 		indicator.BorderSizePixel = 0
 		indicator.Visible = false
@@ -424,8 +423,8 @@ function MUILib:CreateWindow(opts)
 			e.BackgroundTransparency = 1
 			e.Text = "      " .. text
 			e.TextColor3 = Theme.TextGray
-			e.Font = "GothamMedium"
-			e.TextSize = 13
+			e.Font = "GothamBold"
+			e.TextSize = 14
 			e.TextXAlignment = "Left"
 			e.Parent = ns
 			local ind = Instance.new("Frame")
@@ -506,6 +505,7 @@ function MUILib:CreateWindow(opts)
 				l.Size = UDim2.new(0, 3, 1, 0)
 				l.Position = UDim2.new(0, 0, 0, 0)
 				l.BackgroundColor3 = Theme.Accent
+				l.BorderSizePixel = 0
 				l.Parent = sf
 				local corner = Instance.new("UICorner")
 				corner.CornerRadius = UDim.new(0, 2)
@@ -554,7 +554,7 @@ function MUILib:CreateWindow(opts)
 					if o.SubText then
 						local sub = Instance.new("TextLabel")
 						sub.Size = UDim2.new(1, -55, 0, 16)
-						sub.Position = UDim2.new(0, 0, 0, 16)
+						sub.Position = UDim2.new(0, 0, 0, 20)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
 						sub.TextColor3 = Theme.TextGray
@@ -562,7 +562,7 @@ function MUILib:CreateWindow(opts)
 						sub.TextSize = 11
 						sub.TextXAlignment = "Left"
 						sub.Parent = r
-						r.Size = UDim2.new(1, 0, 0, 34)
+						r.Size = UDim2.new(1, 0, 0, 38)
 					end
 
 					local bg = Instance.new("TextButton")
@@ -848,13 +848,15 @@ function MUILib:CreateWindow(opts)
 					button.Font = "GothamBold"
 					button.TextColor3 = Color3.fromRGB(255, 255, 255)
 					button.AutoButtonColor = false
+					button.TextWrapped = true
+					button.TextTruncate = "AtEnd"
 					button.Parent = c
 					round(button, 6)
 					button.MouseEnter:Connect(function()
-						tween(button, 0.12, {BackgroundColor3 = Color3.fromRGB(255, 100, 150)})
+						tween(button, 0.2, {BackgroundColor3 = Color3.fromRGB(255, 100, 150), Size = UDim2.new(0, 120, 0, 30)})
 					end)
 					button.MouseLeave:Connect(function()
-						tween(button, 0.12, {BackgroundColor3 = Theme.Accent})
+						tween(button, 0.2, {BackgroundColor3 = Theme.Accent, Size = UDim2.new(0, 115, 0, 28)})
 					end)
 					button.MouseButton1Click:Connect(callback)
 					return button
@@ -884,7 +886,7 @@ function MUILib:CreateWindow(opts)
 					if o.SubText then
 						local sub = Instance.new("TextLabel")
 						sub.Size = UDim2.new(1, -85, 0, 16)
-						sub.Position = UDim2.new(0, 0, 0, 18)
+						sub.Position = UDim2.new(0, 0, 0, 20)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
 						sub.TextColor3 = Theme.TextGray
@@ -892,7 +894,7 @@ function MUILib:CreateWindow(opts)
 						sub.TextSize = 11
 						sub.TextXAlignment = "Left"
 						sub.Parent = row
-						row.Size = UDim2.new(1, 0, 0, 34)
+						row.Size = UDim2.new(1, 0, 0, 38)
 					end
 
 					local btn = Instance.new("TextButton")
@@ -940,7 +942,7 @@ function MUILib:CreateWindow(opts)
 								captureConn:Disconnect()
 								return
 							end
-							if input.KeyCode ~= Enum.KeyCode.Unknown then
+							if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode ~= Enum.KeyCode.Unknown then
 								key = input.KeyCode
 								btn.Text = key.Name
 								resizeForText()
