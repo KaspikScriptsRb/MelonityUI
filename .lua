@@ -317,14 +317,6 @@ function MUILib:CreateWindow(opts)
 				pathLabel.Text = entry.path or ""
 				pathLabel.Parent = row
 
-				local sep = Instance.new("Frame")
-				sep.Size = UDim2.new(1, -16, 0, 1)
-				sep.Position = UDim2.new(0, 8, 1, -2)
-				sep.BackgroundColor3 = Color3.fromRGB(90, 90, 100)
-				sep.BorderSizePixel = 0
-				sep.BackgroundTransparency = 0.5
-				sep.Parent = row
-
 				row.MouseButton1Click:Connect(function()
 					-- Прокрутка до секции только в текущем табе
 					if win.CurrentTab == entry.tab and entry.sectionFrame and entry.tab.P then
@@ -359,7 +351,7 @@ function MUILib:CreateWindow(opts)
 	langButton.AutoButtonColor = false
 	langButton.Text = ""
 	langButton.Parent = top
-	round(langButton, 4)
+	round(langButton, 0)
 
 	local langLabel = Instance.new("TextLabel")
 	langLabel.Size = UDim2.new(1, -10, 1, 0)
@@ -387,7 +379,15 @@ function MUILib:CreateWindow(opts)
 	langMenu.Visible = false
 	langMenu.ZIndex = 3
 	langMenu.Parent = top
-	round(langMenu, 4)
+	round(langMenu, 0)
+
+	local langSeparator = Instance.new("Frame")
+	langSeparator.Size = UDim2.new(1, 0, 0, 1)
+	langSeparator.Position = UDim2.new(0, 0, 0, 0)
+	langSeparator.BackgroundColor3 = Color3.fromRGB(90, 90, 100)
+	langSeparator.BorderSizePixel = 0
+	langSeparator.BackgroundTransparency = 0.5
+	langSeparator.Parent = langMenu
 
 	langMenu.Size = UDim2.new(0, 120, 0, 0)
 	langMenu.ClipsDescendants = true
@@ -485,8 +485,8 @@ function MUILib:CreateWindow(opts)
 	-- поиск по подвкладкам (героям) в навигации
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
-	prof.Position = UDim2.new(0, 8, 1, -66)
-	prof.BackgroundColor3 = Theme.PanelBG
+	prof.Position = UDim2.new(0, 8, 0, 0)
+	prof.BackgroundColor3 = Color3.fromRGB(46, 48, 60)
 	prof.Parent = sb
 	round(prof, 4)
 
@@ -637,7 +637,7 @@ function MUILib:CreateWindow(opts)
 		indicator.Visible = false
 		indicator.Parent = t.B
 		local indCorner = Instance.new("UICorner")
-		indCorner.CornerRadius = UDim.new(0, 10)
+		indCorner.CornerRadius = UDim.new(0, 1.5)
 		indCorner.Parent = indicator
 		
 		t.B:GetPropertyChangedSignal("TextBounds"):Connect(function()
@@ -807,7 +807,7 @@ function MUILib:CreateWindow(opts)
 					tab = t,
 					sectionFrame = sf,
 					sectionTitle = title,
-					path = string.format("%s - %s", tostring(t.TabName or ""), tostring(text or ""))
+					path = string.format("%s - %s", tostring(t.TabName or ""), tostring(e.Name or "Hero"))
 				})
 				local c = Instance.new("Frame")
 				c.Size = UDim2.new(1, -24, 0, 0)
@@ -1481,6 +1481,12 @@ function MUILib:Notify(opts)
 
 	task.delay(duration, function()
 		tween(frame, 0.4, {Size = UDim2.fromOffset(0, 90), BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
+		tween(shadow, 0.4, {BackgroundTransparency = 1})
+		tween(accentBar, 0.4, {BackgroundTransparency = 1})
+		tween(logo, 0.4, {ImageTransparency = 1})
+		tween(titleLabel, 0.4, {TextTransparency = 1})
+		tween(textLabel, 0.4, {TextTransparency = 1})
+		tween(progress, 0.4, {BackgroundTransparency = 1})
 		task.delay(0.45, function()
 			if screen then
 				screen:Destroy()
