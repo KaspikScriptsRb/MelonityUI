@@ -67,6 +67,7 @@ end
 
 function MUILib:CreateWindow(opts)
 	local win = {Tabs = {}, SidebarEntries = {}, CurrentTab = nil, CurrentSideEntry = nil}
+	local searchEntries = {}
 	local screen = Instance.new("ScreenGui")
 	screen.Name = "MelonityUI"
 	screen.Parent = CoreGui
@@ -83,7 +84,7 @@ function MUILib:CreateWindow(opts)
 	main.Parent = screen
 	round(main, 4)
 
-	-- Animated loading screen inside main window
+
 	local loadingScreen = Instance.new("Frame")
 	loadingScreen.Name = "LoadingScreen"
 	loadingScreen.Size = UDim2.new(1, 0, 1, 0)
@@ -245,26 +246,110 @@ function MUILib:CreateWindow(opts)
 	gInp.TextYAlignment = "Center"
 	gInp.Parent = searchH
 	gInp.ClearTextOnFocus = false
-	gInp.FocusLost:Connect(function()
-		local query = string.lower(gInp.Text or "")
-		for _, tab in pairs(win.Tabs) do
-			if tab.P then
-				for _, child in ipairs(tab.P:GetChildren()) do
-					if child:IsA("Frame") and child.Name == "Content" then
-						for _, section in ipairs(child:GetChildren()) do
-							if section:IsA("Frame") then
-								local lt = section:FindFirstChild("lt")
-								if lt then
-									local txt = string.lower(lt.Text or "")
-									section.Visible = query == "" or txt:find(query, 1, true)
-								end
-							end
-						end
-					end
-				end
+
+	-- Окно результатов поиска секций
+	local searchResults = Instance.new("Frame")
+	searchResults.Size = UDim2.new(1, 0, 0, 0)
+	searchResults.Position = UDim2.new(0, 0, 1, 4)
+	searchResults.BackgroundColor3 = defaultTheme.PanelBackground
+	searchResults.BorderSizePixel = 0
+	searchResults.Visible = false
+	searchResults.ClipsDescendants = true
+	searchResults.Parent = searchH
+	round(searchResults, 4)
+
+	local resultsLayout = Instance.new("UIListLayout")
+	resultsLayout.FillDirection = Enum.FillDirection.Vertical
+	resultsLayout.Padding = UDim.new(0, 2)
+	resultsLayout.Parent = searchResults
+
+	local function clearResults()
+		for _, child in ipairs(searchResults:GetChildren()) do
+			if child ~= resultsLayout then
+				child:Destroy()
 			end
 		end
-	end)
+	end
+
+	local function updateSearchResults()
+		local query = string.lower(gInp.Text or "")
+		clearResults()
+		if query == "" then
+			searchResults.Visible = false
+			searchResults.Size = UDim2.new(1, 0, 0, 0)
+			return
+		end
+
+		local count = 0
+		for _, entry in ipairs(searchEntries) do
+			local title = string.lower(entry.sectionTitle or "")
+			if title:find(query, 1, true) then
+				count += 1
+				local row = Instance.new("TextButton")
+				row.Size = UDim2.new(1, -8, 0, 32)
+				row.BackgroundColor3 = defaultTheme.SearchBackground
+				row.BackgroundTransparency = 0
+				row.AutoButtonColor = true
+				row.Text = ""
+				row.Parent = searchResults
+				round(row, 4)
+
+				local titleLabel = Instance.new("TextLabel")
+				titleLabel.Size = UDim2.new(1, -140, 0, 16)
+				titleLabel.Position = UDim2.new(0, 8, 0, 4)
+				titleLabel.BackgroundTransparency = 1
+				titleLabel.Font = "GothamBold"
+				titleLabel.TextSize = 12
+				titleLabel.TextXAlignment = "Left"
+				titleLabel.TextColor3 = Theme.Text
+				titleLabel.Text = entry.sectionTitle or "Section"
+				titleLabel.Parent = row
+
+				local pathLabel = Instance.new("TextLabel")
+				pathLabel.Size = UDim2.new(0, 130, 1, 0)
+				pathLabel.Position = UDim2.new(1, -132, 0, 0)
+				pathLabel.BackgroundTransparency = 1
+				pathLabel.Font = "Gotham"
+				pathLabel.TextSize = 11
+				pathLabel.TextXAlignment = "Right"
+				pathLabel.TextColor3 = Theme.TextGray
+				pathLabel.Text = entry.path or ""
+				pathLabel.Parent = row
+
+				local sep = Instance.new("Frame")
+				sep.Size = UDim2.new(1, -16, 0, 1)
+				sep.Position = UDim2.new(0, 8, 1, -2)
+				sep.BackgroundColor3 = Color3.fromRGB(90, 90, 100)
+				sep.BorderSizePixel = 0
+				sep.BackgroundTransparency = 0.5
+				sep.Parent = row
+
+				row.MouseButton1Click:Connect(function()
+					-- Прокрутка до секции только в текущем табе
+					if win.CurrentTab == entry.tab and entry.sectionFrame and entry.tab.P then
+						task.defer(function()
+							local relY = entry.sectionFrame.AbsolutePosition.Y - entry.tab.P.AbsolutePosition.Y
+							entry.tab.P.CanvasPosition = Vector2.new(0, math.max(relY - 20, 0))
+						end)
+					end
+					clearResults()
+					searchResults.Visible = false
+					searchResults.Size = UDim2.new(1, 0, 0, 0)
+				end)
+			end
+		end
+
+		if count > 0 then
+			local height = math.min(count * 34, 140)
+			searchResults.Visible = true
+			searchResults.Size = UDim2.new(1, 0, 0, height)
+		else
+			searchResults.Visible = false
+			searchResults.Size = UDim2.new(1, 0, 0, 0)
+		end
+	end
+
+	gInp:GetPropertyChangedSignal("Text"):Connect(updateSearchResults)
 
 	local langButton = Instance.new("TextButton")
 	langButton.Size = UDim2.new(0, 120, 0, 24)
@@ -388,52 +473,10 @@ function MUILib:CreateWindow(opts)
 	end)
 
 	-- поиск по подвкладкам (героям) в навигации
-	local navSearch = Instance.new("Frame")
-	navSearch.Size = UDim2.new(1, -30, 0, 26)
-	navSearch.Position = UDim2.new(0, 15, 0, 40)
-	navSearch.BackgroundColor3 = defaultTheme.SearchBackground
-	navSearch.ZIndex = 10
-	navSearch.Parent = sb
-	round(navSearch, 4)
-
-	local navIcon = Instance.new("ImageLabel")
-	navIcon.Size = UDim2.fromOffset(14, 14)
-	navIcon.Position = UDim2.new(0, 8, 0.5, -7)
-	navIcon.BackgroundTransparency = 1
-	navIcon.Image = "rbxassetid://15999597350"
-	navIcon.ImageColor3 = Theme.TextGray
-	navIcon.Parent = navSearch
-
-	local navBox = Instance.new("TextBox")
-	navBox.Size = UDim2.new(1, -10, 1, 0)
-	navBox.Position = UDim2.new(0, 24, 0, 0)
-	navBox.BackgroundTransparency = 1
-	navBox.Text = ""
-	navBox.PlaceholderText = "Search heroes"
-	navBox.PlaceholderColor3 = Theme.TextGray
-	navBox.TextColor3 = Theme.Text
-	navBox.TextTransparency = 0
-	navBox.Font = "GothamBold"
-	navBox.TextSize = 12
-	navBox.TextXAlignment = "Left"
-	navBox.TextYAlignment = "Center"
-	navBox.ClearTextOnFocus = true
-	navBox.Parent = navSearch
-
-	navBox.FocusLost:Connect(function()
-		local q = string.lower(navBox.Text or "")
-		for _, child in ipairs(ns:GetChildren()) do
-			if child:IsA("TextButton") then
-				local txt = string.lower(child.Name or child.Text or "")
-				child.Visible = (q == "" or txt:find(q, 1, true))
-			end
-		end
-	end)
-
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
 	prof.Position = UDim2.new(0, 8, 1, -66)
-	prof.BackgroundColor3 = defaultTheme.SearchBackground
+	prof.BackgroundColor3 = Theme.MainBG
 	prof.Parent = sb
 	round(prof, 4)
 
@@ -507,7 +550,7 @@ function MUILib:CreateWindow(opts)
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
 	prof.Position = UDim2.new(0, 8, 1, -66)
-	prof.BackgroundColor3 = Theme.MainBG
+	prof.BackgroundColor3 = Theme.PanelBG
 	prof.Parent = sb
 	round(prof, 4)
 
@@ -549,6 +592,7 @@ function MUILib:CreateWindow(opts)
 
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
+		t.TabName = name
 		t.P.Size = UDim2.new(1, -30, 1, -15)
 		t.P.Position = UDim2.new(0, 15, 0, 15)
 		t.P.BackgroundTransparency = 1
@@ -748,6 +792,13 @@ function MUILib:CreateWindow(opts)
 				lt.TextSize = 13
 				lt.TextXAlignment = "Left"
 				lt.Parent = sf
+				-- Зарегистрировать секцию в поисковом индексе
+				table.insert(searchEntries, {
+					tab = t,
+					sectionFrame = sf,
+					sectionTitle = title,
+					path = string.format("%s - %s", tostring(t.TabName or ""), tostring(text or ""))
+				})
 				local c = Instance.new("Frame")
 				c.Size = UDim2.new(1, -24, 0, 0)
 				c.Position = UDim2.new(0, 12, 0, 40)
