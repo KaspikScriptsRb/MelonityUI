@@ -381,10 +381,11 @@ function MUILib:CreateWindow(opts)
 	ns.ScrollingDirection = Enum.ScrollingDirection.Y
 	ns.CanvasSize = UDim2.new(0, 0, 0, 0)
 	ns.Parent = sb
-	Instance.new("UIListLayout", ns).Padding = UDim.new(0, 2)
+	local nsLayout = Instance.new("UIListLayout", ns)
+	nsLayout.Padding = UDim.new(0, 2)
 
-	ns:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-		ns.CanvasSize = UDim2.new(0, 0, 0, ns.AbsoluteContentSize.Y)
+	nsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		ns.CanvasSize = UDim2.new(0, 0, 0, nsLayout.AbsoluteContentSize.Y)
 	end)
 
 	-- поиск по подвкладкам (героям) в навигации
