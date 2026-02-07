@@ -425,10 +425,14 @@ function MUILib:CreateWindow(opts)
 		b.MouseButton1Click:Connect(function()
 			currentLanguage = code
 			updateLangLabel()
-			tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 0)})
-			task.delay(0.3, function()
-				langMenu.Visible = false
-			end)
+			if langMenu then
+				tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 0)})
+				task.delay(0.3, function()
+					if langMenu then
+						langMenu.Visible = false
+					end
+				end)
+			end
 		end)
 	end
 
@@ -437,14 +441,18 @@ function MUILib:CreateWindow(opts)
 
 	local menuOpen = false
 	langButton.MouseButton1Click:Connect(function()
-		if langMenu.Visible then
-			tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 0)})
-			task.delay(0.3, function()
-				langMenu.Visible = false
-			end)
-		else
-			langMenu.Visible = true
-			tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 56)})
+		if langMenu then
+			if langMenu.Visible then
+				tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 0)})
+				task.delay(0.3, function()
+					if langMenu then
+						langMenu.Visible = false
+					end
+				end)
+			else
+				langMenu.Visible = true
+				tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 56)})
+			end
 		end
 	end)
 
