@@ -227,7 +227,7 @@ function MUILib:CreateWindow(opts)
 	searchIcon.Size = UDim2.fromOffset(20, 20)
 	searchIcon.Position = UDim2.new(0, 10, 0.5, -10)
 	searchIcon.BackgroundTransparency = 1
-	searchIcon.Image = "rbxassetid://15999597350"
+	searchIcon.Image = "rbxassetid://107760934824733"
 	searchIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 	searchIcon.Parent = searchH
 
@@ -251,7 +251,8 @@ function MUILib:CreateWindow(opts)
 	local searchResults = Instance.new("Frame")
 	searchResults.Size = UDim2.new(1, 0, 0, 0)
 	searchResults.Position = UDim2.new(0, 0, 1, 4)
-	searchResults.BackgroundColor3 = defaultTheme.PanelBackground
+	searchResults.BackgroundColor3 = defaultTheme.SearchBackground
+	searchResults.ZIndex = 100
 	searchResults.BorderSizePixel = 0
 	searchResults.Visible = false
 	searchResults.ClipsDescendants = true
@@ -353,7 +354,7 @@ function MUILib:CreateWindow(opts)
 
 	local langButton = Instance.new("TextButton")
 	langButton.Size = UDim2.new(0, 120, 0, 24)
-	langButton.Position = UDim2.new(1, -150, 0.5, -12)
+	langButton.Position = UDim2.new(1, -150, 0, 10)
 	langButton.BackgroundColor3 = defaultTheme.SearchBackground
 	langButton.AutoButtonColor = false
 	langButton.Text = ""
@@ -381,7 +382,7 @@ function MUILib:CreateWindow(opts)
 
 	local langMenu = Instance.new("Frame")
 	langMenu.Size = UDim2.new(0, 120, 0, 56)
-	langMenu.Position = UDim2.new(1, -150, 0.5, 12)
+	langMenu.Position = UDim2.new(1, -150, 0, 34)
 	langMenu.BackgroundColor3 = Theme.TopBarBG
 	langMenu.Visible = false
 	langMenu.ZIndex = 3
@@ -409,6 +410,15 @@ function MUILib:CreateWindow(opts)
 		b.Text = text
 		b.ZIndex = 4
 		b.Parent = langMenu
+		
+		local sep = Instance.new("Frame")
+		sep.Size = UDim2.new(1, -16, 0, 1)
+		sep.Position = UDim2.new(0, 8, 1, -2)
+		sep.BackgroundColor3 = Color3.fromRGB(90, 90, 100)
+		sep.BorderSizePixel = 0
+		sep.BackgroundTransparency = 0.5
+		sep.Parent = b
+		
 		b.MouseButton1Click:Connect(function()
 			currentLanguage = code
 			updateLangLabel()
@@ -476,7 +486,7 @@ function MUILib:CreateWindow(opts)
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
 	prof.Position = UDim2.new(0, 8, 1, -66)
-	prof.BackgroundColor3 = Theme.MainBG
+	prof.BackgroundColor3 = Theme.PanelBG
 	prof.Parent = sb
 	round(prof, 4)
 
@@ -1405,7 +1415,7 @@ function MUILib:Notify(opts)
 	round(shadow, 12)
 
 	local accentBar = Instance.new("Frame")
-	accentBar.Size = UDim2.new(0, 4, 1, 0)
+	accentBar.Size = UDim2.new(0, 0, 0, 0)
 	accentBar.Position = UDim2.new(0, 0, 0, 0)
 	accentBar.BackgroundColor3 = defaultTheme.Accent
 	accentBar.BorderSizePixel = 0
@@ -1447,12 +1457,12 @@ function MUILib:Notify(opts)
 	textLabel.Parent = frame
 
 	local progress = Instance.new("Frame")
-	progress.Size = UDim2.new(1, 0, 0, 3)
-	progress.Position = UDim2.new(0, 0, 1, -3)
+	progress.Size = UDim2.new(1, -20, 0, 4)
+	progress.Position = UDim2.new(0, 10, 1, -10)
 	progress.BackgroundColor3 = defaultTheme.Accent
 	progress.BorderSizePixel = 0
 	progress.Parent = frame
-	round(progress, 1)
+	round(progress, 2)
 
 	frame.Size = UDim2.fromOffset(320, 90)
 	frame.BackgroundTransparency = 1
