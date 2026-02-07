@@ -373,10 +373,6 @@ function MUILib:CreateWindow(opts)
 	end
 	updateLangLabel()
 
-	-- временно скрываем выбор языка по запросу пользователя
-	langButton.Visible = false
-	langMenu.Visible = false
-
 	local langMenu = Instance.new("Frame")
 	langMenu.Size = UDim2.new(0, 120, 0, 56)
 	langMenu.Position = UDim2.new(1, -150, 0, 34)
