@@ -46,7 +46,7 @@ local Theme = {
 	Border = Color3.fromRGB(45, 46, 55)
 }
 
-local function tween(o, t, p)
+function tween(o, t, p)
 	TweenService:Create(o, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), p):Play()
 end
 
