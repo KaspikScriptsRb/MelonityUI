@@ -223,11 +223,11 @@ function MUILib:CreateWindow(opts)
 	round(searchH, 4)
 
 	local searchIcon = Instance.new("ImageLabel")
-	searchIcon.Size = UDim2.fromOffset(16, 16)
-	searchIcon.Position = UDim2.new(0, 10, 0.5, -8)
+	searchIcon.Size = UDim2.fromOffset(20, 20)
+	searchIcon.Position = UDim2.new(0, 10, 0.5, -10)
 	searchIcon.BackgroundTransparency = 1
 	searchIcon.Image = "rbxassetid://15999597350"
-	searchIcon.ImageColor3 = Theme.TextGray
+	searchIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 	searchIcon.Parent = searchH
 
 	local gInp = Instance.new("TextBox")
@@ -252,10 +252,12 @@ function MUILib:CreateWindow(opts)
 				for _, child in ipairs(tab.P:GetChildren()) do
 					if child:IsA("Frame") and child.Name == "Content" then
 						for _, section in ipairs(child:GetChildren()) do
-							if section:IsA("Frame") and section:FindFirstChild("l") then
+							if section:IsA("Frame") then
 								local lt = section:FindFirstChild("lt")
-								local txt = lt and string.lower(lt.Text or "") or ""
-								section.Visible = query == "" or txt:find(query, 1, true)
+								if lt then
+									local txt = string.lower(lt.Text or "")
+									section.Visible = query == "" or txt:find(query, 1, true)
+								end
 							end
 						end
 					end
@@ -294,7 +296,7 @@ function MUILib:CreateWindow(opts)
 
 	local langMenu = Instance.new("Frame")
 	langMenu.Size = UDim2.new(0, 120, 0, 56)
-	langMenu.Position = UDim2.new(1, -150, 0, 40)
+	langMenu.Position = UDim2.new(1, -150, 0.5, 12)
 	langMenu.BackgroundColor3 = Theme.TopBarBG
 	langMenu.Visible = false
 	langMenu.ZIndex = 3
@@ -502,59 +504,17 @@ function MUILib:CreateWindow(opts)
 	end)
 
 -- поиск по подвкладкам (героям) в навигации
-	local navSearch = Instance.new("Frame")
-	navSearch.Size = UDim2.new(1, -30, 0, 26)
-	navSearch.Position = UDim2.new(0, 15, 0, 40)
-	navSearch.BackgroundColor3 = defaultTheme.SearchBackground
-	navSearch.ZIndex = 10
-	navSearch.Parent = sb
-	round(navSearch, 4)
-
-	local navIcon = Instance.new("ImageLabel")
-	navIcon.Size = UDim2.fromOffset(14, 14)
-	navIcon.Position = UDim2.new(0, 8, 0.5, -7)
-	navIcon.BackgroundTransparency = 1
-	navIcon.Image = "rbxassetid://15999597350"
-	navIcon.ImageColor3 = Theme.TextGray
-	navIcon.Parent = navSearch
-
-	local navBox = Instance.new("TextBox")
-	navBox.Size = UDim2.new(1, -10, 1, 0)
-	navBox.Position = UDim2.new(0, 24, 0, 0)
-	navBox.BackgroundTransparency = 1
-	navBox.Text = ""
-	navBox.PlaceholderText = "Search heroes"
-	navBox.PlaceholderColor3 = Theme.TextGray
-	navBox.TextColor3 = Theme.Text
-	navBox.TextTransparency = 0
-navBox.Font = "Gotham"
-	navBox.TextSize = 12
-	navBox.TextXAlignment = "Left"
-	navBox.TextYAlignment = "Center"
-    navBox.ClearTextOnFocus = false
-	navBox.Parent = navSearch
-
-	navBox.FocusLost:Connect(function()
-		local q = string.lower(navBox.Text or "")
-		for _, child in ipairs(ns:GetChildren()) do
-			if child:IsA("TextButton") then
-				local txt = string.lower(child.Name or child.Text or "")
-				child.Visible = (q == "" or txt:find(q, 1, true))
-			end
-		end
-	end)
-
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
 	prof.Position = UDim2.new(0, 8, 1, -66)
-	prof.BackgroundColor3 = defaultTheme.SearchBackground
+	prof.BackgroundColor3 = Theme.MainBG
 	prof.Parent = sb
 	round(prof, 4)
 
 	local sideDivider = Instance.new("Frame")
-	sideDivider.Size = UDim2.new(0, 3, 1, -49)
-	sideDivider.Position = UDim2.new(1, -3, 0, 49)
-	sideDivider.BackgroundColor3 = Theme.Border
+	sideDivider.Size = UDim2.new(0, 3, 1, 0)
+	sideDivider.Position = UDim2.new(1, -3, 0, 0)
+	sideDivider.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
 	sideDivider.BorderSizePixel = 0
 	sideDivider.Parent = sb
 
@@ -589,8 +549,8 @@ navBox.Font = "Gotham"
 
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
-		t.P.Size = UDim2.new(1, -30, 1, -20)
-		t.P.Position = UDim2.new(0, 15, 0, 20)
+		t.P.Size = UDim2.new(1, -30, 1, -15)
+		t.P.Position = UDim2.new(0, 15, 0, 15)
 		t.P.BackgroundTransparency = 1
 		t.P.BorderSizePixel = 0
 		t.P.Visible = false
@@ -601,7 +561,7 @@ navBox.Font = "Gotham"
 		local tLayout = Instance.new("UIListLayout")
 		tLayout.Padding = UDim.new(0, 12)
 		tLayout.Parent = t.P
-		tLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() t.P.CanvasSize = UDim2.fromOffset(0, tLayout.AbsoluteContentSize.Y) end)
+		tLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() t.P.CanvasSize = UDim2.fromOffset(0, tLayout.AbsoluteContentSize.Y + 20) end)
 		
 		t.B.Size = UDim2.new(0, 0, 1, 0)
 		t.B.AutomaticSize = "X"
@@ -615,8 +575,9 @@ navBox.Font = "Gotham"
 		
 		local indicator = Instance.new("Frame")
 		indicator.Name = "Indicator"
-		indicator.Size = UDim2.new(1, 0, 0, 3)
-		indicator.Position = UDim2.new(0, 0, 1, -3)
+		indicator.Size = UDim2.new(0, 0, 0, 3)
+		indicator.Position = UDim2.new(0.5, 0, 1, -3)
+		indicator.AnchorPoint = Vector2.new(0.5, 0)
 		indicator.BackgroundColor3 = Theme.Accent
 		indicator.BorderSizePixel = 0
 		indicator.Visible = false
@@ -624,6 +585,11 @@ navBox.Font = "Gotham"
 		local indCorner = Instance.new("UICorner")
 		indCorner.CornerRadius = UDim.new(0, 10)
 		indCorner.Parent = indicator
+		
+		t.B:GetPropertyChangedSignal("TextBounds"):Connect(function()
+			local bounds = t.B.TextBounds
+			indicator.Size = UDim2.fromOffset(bounds.X, 3)
+		end)
 		
 		t.B.MouseButton1Click:Connect(function()
 			for _, v in pairs(self.Tabs) do 
