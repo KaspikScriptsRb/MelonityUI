@@ -384,7 +384,7 @@ function MUILib:CreateWindow(opts)
 	local nsLayout = Instance.new("UIListLayout", ns)
 	nsLayout.Padding = UDim.new(0, 2)
 
-	nsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	ns:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
 		ns.CanvasSize = UDim2.new(0, 0, 0, nsLayout.AbsoluteContentSize.Y)
 	end)
 
