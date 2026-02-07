@@ -221,7 +221,7 @@ function MUILib:CreateWindow(opts)
 	searchH.Position = UDim2.new(0.5, -190, 0.5, -14)
 	searchH.BackgroundColor3 = defaultTheme.SearchBackground
 	searchH.Parent = top
-	round(searchH, 0)
+	round(searchH, 4)
 
 	local searchIcon = Instance.new("ImageLabel")
 	searchIcon.Size = UDim2.fromOffset(20, 20)
@@ -373,6 +373,10 @@ function MUILib:CreateWindow(opts)
 	end
 	updateLangLabel()
 
+	-- временно скрываем выбор языка по запросу пользователя
+	langButton.Visible = false
+	langMenu.Visible = false
+
 	local langMenu = Instance.new("Frame")
 	langMenu.Size = UDim2.new(0, 120, 0, 56)
 	langMenu.Position = UDim2.new(1, -150, 0, 34)
@@ -468,9 +472,20 @@ function MUILib:CreateWindow(opts)
 	sb.Parent = main
 	round(sb, 4)
 
+	local navLabel = Instance.new("TextLabel")
+	navLabel.Size = UDim2.new(1, -16, 0, 18)
+	navLabel.Position = UDim2.new(0, 8, 0, 8)
+	navLabel.BackgroundTransparency = 1
+	navLabel.Text = "Навигация"
+	navLabel.TextColor3 = Theme.TextGray
+	navLabel.Font = "GothamBold"
+	navLabel.TextSize = 11
+	navLabel.TextXAlignment = "Left"
+	navLabel.Parent = sb
+
 	local ns = Instance.new("ScrollingFrame")
-	ns.Size = UDim2.new(1, 0, 1, -126)
-	ns.Position = UDim2.new(0, 0, 0, 8)
+	ns.Size = UDim2.new(1, 0, 1, -146)
+	ns.Position = UDim2.new(0, 0, 0, 30)
 	ns.BackgroundTransparency = 1
 	ns.BorderSizePixel = 0
 	ns.ScrollBarThickness = 8
@@ -985,16 +1000,24 @@ function MUILib:CreateWindow(opts)
 					label.TextXAlignment = "Left"
 					label.Parent = r
 
+					local valueBg = Instance.new("Frame")
+					valueBg.Size = UDim2.new(0, 52, 0, 20)
+					valueBg.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 60), 0.5, -10)
+					valueBg.BackgroundColor3 = Theme.MainBG
+					valueBg.BorderSizePixel = 0
+					valueBg.Parent = r
+					round(valueBg, 4)
+
 					local valueLabel = Instance.new("TextLabel")
-					valueLabel.Size = UDim2.new(0, 40, 1, 0)
-					valueLabel.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 55), 0, 0)
+					valueLabel.Size = UDim2.new(1, -8, 1, 0)
+					valueLabel.Position = UDim2.new(0, 4, 0, 0)
 					valueLabel.BackgroundTransparency = 1
 					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
 					valueLabel.TextSize = 12
 					valueLabel.TextXAlignment = "Right"
 					valueLabel.TextYAlignment = "Center"
-					valueLabel.Parent = r
+					valueLabel.Parent = valueBg
 
 					local bar = Instance.new("Frame")
 					bar.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 4)
