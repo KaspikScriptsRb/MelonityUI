@@ -496,81 +496,13 @@ function MUILib:CreateWindow(opts)
 		if ok and thumb then
 			av.Image = thumb
 		end
-	end
-
-	local ct = Instance.new("Frame")
-	ct.Size = UDim2.new(1, -220, 1, -84)
-	ct.Position = UDim2.new(0, 220, 0, 84)
-	ct.BackgroundTransparency = 1
-	ct.Parent = main
-
-	local sb = Instance.new("Frame")
-	sb.Size = UDim2.new(0, 220, 1, -84)
-	sb.Position = UDim2.new(0, 0, 0, 84)
-	sb.BackgroundColor3 = Theme.MainBG
-	sb.Parent = main
-	round(sb, 4)
-
-	local ns = Instance.new("ScrollingFrame")
-	ns.Size = UDim2.new(1, 0, 1, -126)
-	ns.Position = UDim2.new(0, 0, 0, 84)
-	ns.BackgroundTransparency = 1
-	ns.BorderSizePixel = 0
-	ns.ScrollBarThickness = 8
-	ns.ScrollBarImageTransparency = 0.3
-	ns.ScrollingDirection = Enum.ScrollingDirection.Y
-	ns.CanvasSize = UDim2.new(0, 0, 0, 0)
-	ns.Parent = sb
-	local nsLayout = Instance.new("UIListLayout", ns)
-	nsLayout.Padding = UDim.new(0, 2)
-
-	ns:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-		ns.CanvasSize = UDim2.new(0, 0, 0, nsLayout.AbsoluteContentSize.Y)
 	end)
 
--- поиск по подвкладкам (героям) в навигации
-	local prof = Instance.new("Frame")
-	prof.Size = UDim2.new(1, -16, 0, 58)
-	prof.Position = UDim2.new(0, 8, 1, -66)
-	prof.BackgroundColor3 = Theme.PanelBG
-	prof.Parent = sb
-	round(prof, 4)
-
-	local sideDivider = Instance.new("Frame")
-	sideDivider.Size = UDim2.new(0, 3, 1, 0)
-	sideDivider.Position = UDim2.new(1, -3, 0, 0)
-	sideDivider.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-	sideDivider.BorderSizePixel = 0
-	sideDivider.Parent = sb
-
-	local av = Instance.new("ImageLabel")
-	av.Size = UDim2.fromOffset(36, 36)
-	av.Position = UDim2.new(0, 15, 0.5, -18)
-	av.BackgroundTransparency = 1
-	av.Image = "rbxassetid://13000639907"
-	av.Parent = prof
-	round(av, 18)
-
-	local uN = Instance.new("TextLabel")
-	uN.Text = (Players.LocalPlayer and Players.LocalPlayer.Name) or "Player"
-	uN.Size = UDim2.new(1, -65, 0, 15)
-	uN.Position = UDim2.new(0, 60, 0.5, -10)
-	uN.BackgroundTransparency = 1
-	uN.TextColor3 = Theme.Text
-	uN.Font = "GothamBold"
-	uN.TextSize = 13
-	uN.TextXAlignment = "Left"
-	uN.Parent = prof
-
-	local lp = Players.LocalPlayer
-	if lp then
-		local ok, thumb = pcall(function()
-			return Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
-		end)
-		if ok and thumb then
-			av.Image = thumb
-		end
-	end
+	local ct = Instance.new("Frame")
+	ct.Size = UDim2.new(1, -220, 1, -48)
+	ct.Position = UDim2.new(0, 220, 0, 48)
+	ct.BackgroundTransparency = 1
+	ct.Parent = main
 
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
@@ -956,7 +888,7 @@ function MUILib:CreateWindow(opts)
 
 					local valueBg = Instance.new("Frame")
 					valueBg.Size = UDim2.new(0, 40, 0, 20)
-					valueBg.Position = UDim2.new(0, 0, 0.5, -10)
+					valueBg.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 60), 0.5, -10)
 					valueBg.BackgroundColor3 = Theme.MainBG
 					valueBg.BorderSizePixel = 0
 					valueBg.Parent = r
@@ -968,7 +900,7 @@ function MUILib:CreateWindow(opts)
 					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
 					valueLabel.TextSize = 12
-					valueLabel.TextXAlignment = "Center"
+					valueLabel.TextXAlignment = "Left"
 					valueLabel.TextYAlignment = "Center"
 					valueLabel.Parent = valueBg
 					valueLabel:GetPropertyChangedSignal("TextBounds"):Connect(function()
