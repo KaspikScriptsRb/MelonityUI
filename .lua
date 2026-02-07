@@ -221,7 +221,7 @@ function MUILib:CreateWindow(opts)
 	searchH.Position = UDim2.new(0.5, -190, 0.5, -14)
 	searchH.BackgroundColor3 = defaultTheme.SearchBackground
 	searchH.Parent = top
-	round(searchH, 4)
+	round(searchH, 0)
 
 	local searchIcon = Instance.new("ImageLabel")
 	searchIcon.Size = UDim2.fromOffset(20, 20)
@@ -250,14 +250,17 @@ function MUILib:CreateWindow(opts)
 	-- Окно результатов поиска секций
 	local searchResults = Instance.new("Frame")
 	searchResults.Size = UDim2.new(1, 0, 0, 0)
-	searchResults.Position = UDim2.new(0, 0, 1, 4)
+	searchResults.Position = UDim2.new(0.5, -190, 0, 56)
 	searchResults.BackgroundColor3 = defaultTheme.SearchBackground
 	searchResults.ZIndex = 100
 	searchResults.BorderSizePixel = 0
 	searchResults.Visible = false
 	searchResults.ClipsDescendants = true
-	searchResults.Parent = searchH
-	round(searchResults, 4)
+	searchResults.Parent = top
+	local topLayout = Instance.new("UIListLayout")
+	topLayout.FillDirection = Enum.FillDirection.Vertical
+	topLayout.Padding = UDim.new(0, 2)
+	topLayout.Parent = searchResults
 
 	local resultsLayout = Instance.new("UIListLayout")
 	resultsLayout.FillDirection = Enum.FillDirection.Vertical
@@ -351,7 +354,9 @@ function MUILib:CreateWindow(opts)
 	langButton.AutoButtonColor = false
 	langButton.Text = ""
 	langButton.Parent = top
-	round(langButton, 0)
+	local langCorner = Instance.new("UICorner")
+	langCorner.CornerRadius = UDim.new(0, 4)
+	langCorner.Parent = langButton
 
 	local langLabel = Instance.new("TextLabel")
 	langLabel.Size = UDim2.new(1, -10, 1, 0)
@@ -379,7 +384,9 @@ function MUILib:CreateWindow(opts)
 	langMenu.Visible = false
 	langMenu.ZIndex = 3
 	langMenu.Parent = top
-	round(langMenu, 0)
+	local menuCorner = Instance.new("UICorner")
+	menuCorner.CornerRadius = UDim.new(0, 4)
+	menuCorner.Parent = langMenu
 
 	local langSeparator = Instance.new("Frame")
 	langSeparator.Size = UDim2.new(1, 0, 0, 1)
@@ -467,7 +474,7 @@ function MUILib:CreateWindow(opts)
 
 	local ns = Instance.new("ScrollingFrame")
 	ns.Size = UDim2.new(1, 0, 1, -126)
-	ns.Position = UDim2.new(0, 0, 0, 84)
+	ns.Position = UDim2.new(0, 0, 0, 20)
 	ns.BackgroundTransparency = 1
 	ns.BorderSizePixel = 0
 	ns.ScrollBarThickness = 8
@@ -486,7 +493,7 @@ function MUILib:CreateWindow(opts)
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
 	prof.Position = UDim2.new(0, 8, 0, 0)
-	prof.BackgroundColor3 = Color3.fromRGB(46, 48, 60)
+	prof.BackgroundColor3 = Theme.TopBarBG
 	prof.Parent = sb
 	round(prof, 4)
 
