@@ -250,17 +250,13 @@ function MUILib:CreateWindow(opts)
 	-- Окно результатов поиска секций
 	local searchResults = Instance.new("Frame")
 	searchResults.Size = UDim2.new(1, 0, 0, 0)
-	searchResults.Position = UDim2.new(0.5, -190, 0, 56)
+	searchResults.Position = UDim2.new(0, 0, 1, 0)
 	searchResults.BackgroundColor3 = defaultTheme.SearchBackground
 	searchResults.ZIndex = 100
 	searchResults.BorderSizePixel = 0
 	searchResults.Visible = false
 	searchResults.ClipsDescendants = true
-	searchResults.Parent = top
-	local topLayout = Instance.new("UIListLayout")
-	topLayout.FillDirection = Enum.FillDirection.Vertical
-	topLayout.Padding = UDim.new(0, 2)
-	topLayout.Parent = searchResults
+	searchResults.Parent = searchH
 
 	local resultsLayout = Instance.new("UIListLayout")
 	resultsLayout.FillDirection = Enum.FillDirection.Vertical
@@ -380,7 +376,7 @@ function MUILib:CreateWindow(opts)
 	local langMenu = Instance.new("Frame")
 	langMenu.Size = UDim2.new(0, 120, 0, 56)
 	langMenu.Position = UDim2.new(1, -150, 0, 34)
-	langMenu.BackgroundColor3 = Theme.TopBarBG
+	langMenu.BackgroundColor3 = defaultTheme.SearchBackground
 	langMenu.Visible = false
 	langMenu.ZIndex = 3
 	langMenu.Parent = top
@@ -474,7 +470,7 @@ function MUILib:CreateWindow(opts)
 
 	local ns = Instance.new("ScrollingFrame")
 	ns.Size = UDim2.new(1, 0, 1, -126)
-	ns.Position = UDim2.new(0, 0, 0, 20)
+	ns.Position = UDim2.new(0, 0, 0, 8)
 	ns.BackgroundTransparency = 1
 	ns.BorderSizePixel = 0
 	ns.ScrollBarThickness = 8
@@ -493,7 +489,7 @@ function MUILib:CreateWindow(opts)
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
 	prof.Position = UDim2.new(0, 8, 0, 0)
-	prof.BackgroundColor3 = Theme.TopBarBG
+	prof.BackgroundColor3 = Theme.PanelBG
 	prof.Parent = sb
 	round(prof, 4)
 
