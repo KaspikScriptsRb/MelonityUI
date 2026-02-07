@@ -346,8 +346,7 @@ function MUILib:CreateWindow(opts)
 
 	local th = Instance.new("Frame")
 	th.Size = UDim2.new(1, 0, 0, 36)
-	-- полоса с вкладками сразу под верхней шапкой
-	th.Position = UDim2.new(0, 0, 0, 45)
+	th.Position = UDim2.new(0, 0, 0, 48)
 	th.BackgroundColor3 = Theme.TopBarBG
 	th.Parent = main
 	round(th, 0)
@@ -367,10 +366,13 @@ function MUILib:CreateWindow(opts)
 
 	local ns = Instance.new("ScrollingFrame")
 	ns.Size = UDim2.new(1, 0, 1, -126)
-	ns.Position = UDim2.new(0, 0, 0, 71)
+	ns.Position = UDim2.new(0, 0, 0, 84)
 	ns.BackgroundTransparency = 1
 	ns.BorderSizePixel = 0
-	ns.ScrollBarThickness = 0
+	ns.ScrollBarThickness = 8
+	ns.ScrollBarImageTransparency = 0.3
+	ns.ScrollingDirection = Enum.ScrollingDirection.Y
+	ns.CanvasSize = UDim2.new(0, 0, 0, 0)
 	ns.Parent = sb
 	Instance.new("UIListLayout", ns).Padding = UDim.new(0, 2)
 
@@ -383,27 +385,17 @@ function MUILib:CreateWindow(opts)
 	navSearch.Parent = sb
 	round(navSearch, 4)
 
-	local navTitle = Instance.new("TextLabel")
-	navTitle.Text = "Навигация"
-	navTitle.Size = UDim2.new(1, -30, 0, 18)
-	navTitle.Position = UDim2.new(0, 15, 0, 16)
-	navTitle.BackgroundTransparency = 1
-	navTitle.TextColor3 = Theme.Text
-	navTitle.Font = "GothamBold"
-	navTitle.TextSize = 13
-	navTitle.TextXAlignment = "Left"
-	navTitle.Parent = sb
+	local navIcon = Instance.new("ImageLabel")
+	navIcon.Size = UDim2.fromOffset(14, 14)
+	navIcon.Position = UDim2.new(0, 8, 0.5, -7)
+	navIcon.BackgroundTransparency = 1
+	navIcon.Image = "rbxassetid://15999597378"
+	navIcon.ImageColor3 = Theme.TextGray
+	navIcon.Parent = navSearch
 
-	local navUnderline = Instance.new("Frame")
-	navUnderline.Size = UDim2.new(0, 60, 0, 3)
-	navUnderline.Position = UDim2.new(0, 15, 0, 32)
-	navUnderline.BackgroundColor3 = Theme.Accent
-	navUnderline.BorderSizePixel = 0
-	navUnderline.Parent = sb
-	round(navUnderline, 6)
 	local navBox = Instance.new("TextBox")
 	navBox.Size = UDim2.new(1, -10, 1, 0)
-	navBox.Position = UDim2.new(0, 5, 0, 0)
+	navBox.Position = UDim2.new(0, 24, 0, 0)
 	navBox.BackgroundTransparency = 1
 	navBox.Text = ""
 	navBox.PlaceholderText = "Search heroes"
@@ -1262,7 +1254,16 @@ function MUILib:Notify(opts)
 	frame.BackgroundColor3 = defaultTheme.PanelBackground
 	frame.BorderSizePixel = 0
 	frame.Parent = screen
-	round(frame, 6)
+	round(frame, 8)
+
+	local shadow = Instance.new("Frame")
+	shadow.Size = UDim2.new(1, 4, 1, 4)
+	shadow.Position = UDim2.new(0, -2, 0, -2)
+	shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+	shadow.BackgroundTransparency = 0.9
+	shadow.BorderSizePixel = 0
+	shadow.ZIndex = -1
+	shadow.Parent = frame
 
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = defaultTheme.Accent
