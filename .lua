@@ -338,6 +338,7 @@ function MUILib:CreateWindow(opts)
 
 	local th = Instance.new("Frame")
 	th.Size = UDim2.new(1, 0, 0, 36)
+	-- полоса с вкладками сразу под верхней шапкой
 	th.Position = UDim2.new(0, 0, 0, 45)
 	th.BackgroundColor3 = Theme.TopBarBG
 	th.Parent = main
@@ -350,8 +351,9 @@ function MUILib:CreateWindow(opts)
 	Instance.new("UIPadding", th).PaddingLeft = UDim.new(0, 20)
 
 	local sb = Instance.new("Frame")
-	sb.Size = UDim2.new(0, 220, 1, -45)
-	sb.Position = UDim2.new(0, 0, 0, 45)
+	-- левая навигация начинается под полосой вкладок
+	sb.Size = UDim2.new(0, 220, 1, -81)
+	sb.Position = UDim2.new(0, 0, 0, 81)
 	sb.BackgroundColor3 = Theme.PanelBG
 	sb.Parent = main
 	round(sb, 4)
