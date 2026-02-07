@@ -273,71 +273,20 @@ function MUILib:CreateWindow(opts)
 
 	local function updateSearchResults()
 		local query = string.lower(gInp.Text or "")
-		clearResults()
-		if query == "" then
-			searchResults.Visible = false
-			searchResults.Size = UDim2.new(1, 0, 0, 0)
-			return
-		end
-
-		local count = 0
-		for _, entry in ipairs(searchEntries) do
-			local title = string.lower(entry.sectionTitle or "")
-			if title:find(query, 1, true) then
-				count += 1
-				local row = Instance.new("TextButton")
-				row.Size = UDim2.new(1, -8, 0, 32)
-				row.BackgroundColor3 = defaultTheme.SearchBackground
-				row.BackgroundTransparency = 0
-				row.AutoButtonColor = true
-				row.Text = ""
-				row.Parent = searchResults
-				round(row, 4)
-
-				local titleLabel = Instance.new("TextLabel")
-				titleLabel.Size = UDim2.new(1, -140, 0, 16)
-				titleLabel.Position = UDim2.new(0, 8, 0, 4)
-				titleLabel.BackgroundTransparency = 1
-				titleLabel.Font = "GothamBold"
-				titleLabel.TextSize = 12
-				titleLabel.TextXAlignment = "Left"
-				titleLabel.TextColor3 = Theme.Text
-				titleLabel.Text = entry.sectionTitle or "Section"
-				titleLabel.Parent = row
-
-				local pathLabel = Instance.new("TextLabel")
-				pathLabel.Size = UDim2.new(0, 130, 1, 0)
-				pathLabel.Position = UDim2.new(1, -132, 0, 0)
-				pathLabel.BackgroundTransparency = 1
-				pathLabel.Font = "Gotham"
-				pathLabel.TextSize = 11
-				pathLabel.TextXAlignment = "Right"
-				pathLabel.TextColor3 = Theme.TextGray
-				pathLabel.Text = entry.path or ""
-				pathLabel.Parent = row
-
-				row.MouseButton1Click:Connect(function()
-					-- Прокрутка до секции только в текущем табе
-					if win.CurrentTab == entry.tab and entry.sectionFrame and entry.tab.P then
-						task.defer(function()
-							local relY = entry.sectionFrame.AbsolutePosition.Y - entry.tab.P.AbsolutePosition.Y
-							entry.tab.P.CanvasPosition = Vector2.new(0, math.max(relY - 20, 0))
-						end)
-					end
-					clearResults()
-					searchResults.Visible = false
-					searchResults.Size = UDim2.new(1, 0, 0, 0)
-				end)
+		
+		-- Скрываем окно результатов поиска
+		searchResults.Visible = false
+		searchResults.Size = UDim2.new(1, 0, 0, 0)
+		
+		-- Показываем/скрываем секции в текущем табе
+		if win.CurrentTab then
+			for _, entry in ipairs(searchEntries) do
+				if entry.tab == win.CurrentTab and entry.sectionFrame then
+					local title = string.lower(entry.sectionTitle or "")
+					local matches = query == "" or title:find(query, 1, true)
+					entry.sectionFrame.Visible = matches
+				end
 			end
-		end
-
-		if count > 0 then
-			local height = math.min(count * 34, 140)
-			searchResults.Visible = true
-			searchResults.Size = UDim2.new(1, 0, 0, height)
-		else
-			searchResults.Visible = false
-			searchResults.Size = UDim2.new(1, 0, 0, 0)
 		end
 	end
 
@@ -349,6 +298,7 @@ function MUILib:CreateWindow(opts)
 	langButton.BackgroundColor3 = defaultTheme.SearchBackground
 	langButton.AutoButtonColor = false
 	langButton.Text = ""
+	langButton.Visible = false
 	langButton.Parent = top
 	local langCorner = Instance.new("UICorner")
 	langCorner.CornerRadius = UDim.new(0, 4)
@@ -470,8 +420,8 @@ function MUILib:CreateWindow(opts)
 	Instance.new("UIPadding", th).PaddingLeft = UDim.new(0, 20)
 
 	local sb = Instance.new("Frame")
-	sb.Size = UDim2.new(0, 220, 1, -84)
-	sb.Position = UDim2.new(0, 0, 0, 84)
+	sb.Size = UDim2.new(0, 220, 1, -48)
+	sb.Position = UDim2.new(0, 0, 0, 48)
 	sb.BackgroundColor3 = Theme.MainBG
 	sb.Parent = main
 	round(sb, 4)
@@ -1005,23 +955,26 @@ function MUILib:CreateWindow(opts)
 					label.Parent = r
 
 					local valueBg = Instance.new("Frame")
-					valueBg.Size = UDim2.new(0, 52, 0, 20)
-					valueBg.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 60), 0.5, -10)
+					valueBg.Size = UDim2.new(0, 40, 0, 20)
+					valueBg.Position = UDim2.new(0, 0, 0.5, -10)
 					valueBg.BackgroundColor3 = Theme.MainBG
 					valueBg.BorderSizePixel = 0
 					valueBg.Parent = r
 					round(valueBg, 4)
 
 					local valueLabel = Instance.new("TextLabel")
-					valueLabel.Size = UDim2.new(1, -8, 1, 0)
-					valueLabel.Position = UDim2.new(0, 4, 0, 0)
+					valueLabel.Size = UDim2.new(1, 0, 1, 0)
 					valueLabel.BackgroundTransparency = 1
 					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
 					valueLabel.TextSize = 12
-					valueLabel.TextXAlignment = "Right"
+					valueLabel.TextXAlignment = "Center"
 					valueLabel.TextYAlignment = "Center"
 					valueLabel.Parent = valueBg
+					valueLabel:GetPropertyChangedSignal("TextBounds"):Connect(function()
+						local bounds = valueLabel.TextBounds
+						valueBg.Size = UDim2.fromOffset(math.max(bounds.X + 12, 40), 20)
+					end)
 
 					local bar = Instance.new("Frame")
 					bar.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 4)
