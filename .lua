@@ -364,6 +364,13 @@ function MUILib:CreateWindow(opts)
 	sb.Parent = main
 	round(sb, 4)
 
+	local sideSeparator = Instance.new("Frame")
+	sideSeparator.Size = UDim2.new(0, 3, 1, -84)
+	sideSeparator.Position = UDim2.new(0, 220, 0, 84)
+	sideSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+	sideSeparator.BorderSizePixel = 0
+	sideSeparator.Parent = main
+
 	local ns = Instance.new("ScrollingFrame")
 	ns.Size = UDim2.new(1, 0, 1, -126)
 	ns.Position = UDim2.new(0, 0, 0, 84)
@@ -375,6 +382,10 @@ function MUILib:CreateWindow(opts)
 	ns.CanvasSize = UDim2.new(0, 0, 0, 0)
 	ns.Parent = sb
 	Instance.new("UIListLayout", ns).Padding = UDim.new(0, 2)
+
+	ns:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		ns.CanvasSize = UDim2.new(0, 0, 0, ns.AbsoluteContentSize.Y)
+	end)
 
 	-- поиск по подвкладкам (героям) в навигации
 	local navSearch = Instance.new("Frame")
