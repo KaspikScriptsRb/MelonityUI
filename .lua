@@ -222,6 +222,14 @@ function MUILib:CreateWindow(opts)
 	searchH.Parent = top
 	round(searchH, 4)
 
+	local searchIcon = Instance.new("ImageLabel")
+	searchIcon.Size = UDim2.fromOffset(16, 16)
+	searchIcon.Position = UDim2.new(0, 10, 0.5, -8)
+	searchIcon.BackgroundTransparency = 1
+	searchIcon.Image = "rbxassetid://15999597378"
+	searchIcon.ImageColor3 = Theme.TextGray
+	searchIcon.Parent = searchH
+
 	local gInp = Instance.new("TextBox")
 	gInp.Size = UDim2.new(1, -10, 1, 0)
 	gInp.Position = UDim2.new(0, 30, 0, 0)
@@ -351,9 +359,8 @@ function MUILib:CreateWindow(opts)
 	Instance.new("UIPadding", th).PaddingLeft = UDim.new(0, 20)
 
 	local sb = Instance.new("Frame")
-	-- левая навигация начинается под полосой вкладок
-	sb.Size = UDim2.new(0, 220, 1, -81)
-	sb.Position = UDim2.new(0, 0, 0, 81)
+	sb.Size = UDim2.new(0, 220, 1, -84)
+	sb.Position = UDim2.new(0, 0, 0, 84)
 	sb.BackgroundColor3 = Theme.PanelBG
 	sb.Parent = main
 	round(sb, 4)
@@ -464,18 +471,10 @@ function MUILib:CreateWindow(opts)
 	end
 
 	local ct = Instance.new("Frame")
-	ct.Size = UDim2.new(1, -220, 1, -49)
-	ct.Position = UDim2.new(0, 220, 0, 49)
+	ct.Size = UDim2.new(1, -220, 1, -84)
+	ct.Position = UDim2.new(0, 220, 0, 84)
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
-
-	-- вертикальный разделитель между навигацией и контентом
-	local sideSeparator = Instance.new("Frame")
-	sideSeparator.Size = UDim2.new(0, 3, 1, -45)
-	sideSeparator.Position = UDim2.new(0, 220, 0, 45)
-	sideSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-	sideSeparator.BorderSizePixel = 0
-	sideSeparator.Parent = main
 
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
@@ -505,8 +504,8 @@ function MUILib:CreateWindow(opts)
 		
 		local indicator = Instance.new("Frame")
 		indicator.Name = "Indicator"
-		indicator.Size = UDim2.new(1, 0, 0, 3)
-		indicator.Position = UDim2.new(0, 0, 1, -3)
+		indicator.Size = UDim2.new(1, 0, 0, 2)
+		indicator.Position = UDim2.new(0, 0, 1, -2)
 		indicator.BackgroundColor3 = Theme.Accent
 		indicator.BorderSizePixel = 0
 		indicator.Visible = false
@@ -1303,8 +1302,8 @@ function MUILib:Notify(opts)
 	textLabel.Parent = frame
 
 	local progress = Instance.new("Frame")
-	progress.Size = UDim2.new(1, 0, 0, 3)
-	progress.Position = UDim2.new(0, 0, 1, -3)
+	progress.Size = UDim2.new(1, 0, 0, 4)
+	progress.Position = UDim2.new(0, 0, 1, -4)
 	progress.BackgroundColor3 = defaultTheme.Accent
 	progress.BorderSizePixel = 0
 	progress.Parent = frame
@@ -1321,7 +1320,7 @@ function MUILib:Notify(opts)
 		while elapsed < duration do
 			task.wait(step)
 			elapsed = elapsed + step
-			progress.Size = UDim2.new(1 - (elapsed / duration), 0, 0, 3)
+		progress.Size = UDim2.new(1 - (elapsed / duration), 0, 0, 4)
 		end
 	end)
 
