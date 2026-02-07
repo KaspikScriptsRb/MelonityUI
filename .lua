@@ -338,7 +338,7 @@ function MUILib:CreateWindow(opts)
 
 	local th = Instance.new("Frame")
 	th.Size = UDim2.new(1, 0, 0, 36)
-	th.Position = UDim2.new(0, 0, 0, 49)
+	th.Position = UDim2.new(0, 0, 0, 45)
 	th.BackgroundColor3 = Theme.TopBarBG
 	th.Parent = main
 	round(th, 0)
@@ -350,8 +350,8 @@ function MUILib:CreateWindow(opts)
 	Instance.new("UIPadding", th).PaddingLeft = UDim.new(0, 20)
 
 	local sb = Instance.new("Frame")
-	sb.Size = UDim2.new(0, 220, 1, -49)
-	sb.Position = UDim2.new(0, 0, 0, 49)
+	sb.Size = UDim2.new(0, 220, 1, -45)
+	sb.Position = UDim2.new(0, 0, 0, 45)
 	sb.BackgroundColor3 = Theme.PanelBG
 	sb.Parent = main
 	round(sb, 4)
@@ -466,6 +466,14 @@ function MUILib:CreateWindow(opts)
 	ct.Position = UDim2.new(0, 220, 0, 49)
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
+
+	-- вертикальный разделитель между навигацией и контентом
+	local sideSeparator = Instance.new("Frame")
+	sideSeparator.Size = UDim2.new(0, 3, 1, -45)
+	sideSeparator.Position = UDim2.new(0, 220, 0, 45)
+	sideSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+	sideSeparator.BorderSizePixel = 0
+	sideSeparator.Parent = main
 
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
@@ -637,7 +645,8 @@ function MUILib:CreateWindow(opts)
 				local sf = Instance.new("Frame")
 				sf.Size = UDim2.new(1, -24, 0, 0)
 				sf.AutomaticSize = "Y"
-				sf.BackgroundTransparency = 1
+				sf.BackgroundColor3 = Theme.PanelBG
+				sf.BackgroundTransparency = 0
 				sf.Parent = contentFrame
 				round(sf, 6)
 				local l = Instance.new("Frame")
