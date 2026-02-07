@@ -464,18 +464,16 @@ function MUILib:CreateWindow(opts)
 	local ct = Instance.new("Frame")
 	ct.Size = UDim2.new(1, -220, 1, -49)
 	ct.Position = UDim2.new(0, 220, 0, 49)
-	ct.BackgroundColor3 = Theme.MainBG
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
 
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
-		t.P.Size = UDim2.new(1, -30, 1, -20)
-		t.P.Position = UDim2.new(0, 15, 0, 30)
-		t.P.BackgroundColor3 = Theme.MainBG
-		t.P.BackgroundTransparency = 0
-		t.P.BorderSizePixel = 0
-		t.P.Visible = false
+			t.P.Size = UDim2.new(1, -30, 1, -20)
+			t.P.Position = UDim2.new(0, 15, 0, 30)
+			t.P.BackgroundTransparency = 1
+			t.P.BorderSizePixel = 0
+			t.P.Visible = false
 		-- Скролл есть, но сам скроллбар невидим
 		t.P.ScrollBarThickness = 4
 		t.P.ScrollBarImageTransparency = 1
@@ -572,13 +570,11 @@ function MUILib:CreateWindow(opts)
 			local function setSelected(sel)
 				if sel then
 					e.TextColor3 = Theme.Text
-					e.BackgroundColor3 = Theme.PanelBG
-					e.BackgroundTransparency = 0
+					e.BackgroundTransparency = 1
 					ind.BackgroundTransparency = 0
 					contentFrame.Visible = true
 				else
 					e.TextColor3 = Theme.TextGray
-					e.BackgroundColor3 = Theme.PanelBG
 					e.BackgroundTransparency = 1
 					ind.BackgroundTransparency = 1
 					contentFrame.Visible = false
@@ -622,17 +618,12 @@ function MUILib:CreateWindow(opts)
 				end
 
 				t.CurrentSideEntry = e
-				contentFrame.BackgroundColor3 = Theme.PanelBG
 				contentFrame.BackgroundTransparency = 1
 				contentFrame.Visible = true
-				tween(contentFrame, 0.15, {BackgroundTransparency = 0})
-				tween(e, 0.15, {BackgroundColor3 = Theme.PanelBG, TextColor3 = Theme.Text, BackgroundTransparency = 0})
+				tween(e, 0.15, {TextColor3 = Theme.Text, BackgroundTransparency = 1})
 				tween(ind, 0.15, {BackgroundTransparency = 0})
 			end)
-
-			-- Первая подвкладка в этом табе выбирается по умолчанию
 			if not t.CurrentSideEntry then
-				-- перед выбором первой гарантированно скрываем все Content
 				for _, child in ipairs(t.P:GetChildren()) do
 					if child:IsA("Frame") and child.Name == "Content" then
 						child.Visible = false
@@ -641,14 +632,12 @@ function MUILib:CreateWindow(opts)
 				t.CurrentSideEntry = e
 				setSelected(true)
 			end
-
-			-- CreateSection method for this side entry
 			function sideEntry:CreateSection(title)
 				local sec = {}
 				local sf = Instance.new("Frame")
 				sf.Size = UDim2.new(1, -24, 0, 0)
-				sf.BackgroundColor3 = Theme.PanelBG
 				sf.AutomaticSize = "Y"
+				sf.BackgroundTransparency = 1
 				sf.Parent = contentFrame
 				round(sf, 6)
 				local l = Instance.new("Frame")
