@@ -226,7 +226,7 @@ function MUILib:CreateWindow(opts)
 	searchIcon.Size = UDim2.fromOffset(16, 16)
 	searchIcon.Position = UDim2.new(0, 10, 0.5, -8)
 	searchIcon.BackgroundTransparency = 1
-	searchIcon.Image = "rbxassetid://15999597378"
+	searchIcon.Image = "rbxassetid://15999597350"
 	searchIcon.ImageColor3 = Theme.TextGray
 	searchIcon.Parent = searchH
 
@@ -301,6 +301,9 @@ function MUILib:CreateWindow(opts)
 	langMenu.Parent = top
 	round(langMenu, 4)
 
+	langMenu.Size = UDim2.new(0, 120, 0, 0)
+	langMenu.ClipsDescendants = true
+
 	local langLayout = Instance.new("UIListLayout")
 	langLayout.FillDirection = Enum.FillDirection.Vertical
 	langLayout.Padding = UDim.new(0, 2)
@@ -322,7 +325,10 @@ function MUILib:CreateWindow(opts)
 		b.MouseButton1Click:Connect(function()
 			currentLanguage = code
 			updateLangLabel()
-			langMenu.Visible = false
+			tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 0)})
+			task.delay(0.3, function()
+				langMenu.Visible = false
+			end)
 		end)
 	end
 
@@ -331,16 +337,14 @@ function MUILib:CreateWindow(opts)
 
 	local menuOpen = false
 	langButton.MouseButton1Click:Connect(function()
-		menuOpen = not menuOpen
-		if menuOpen then
-			langMenu.Visible = true
-			langMenu.Size = UDim2.new(0, 120, 0, 0)
-			tween(langMenu, 0.2, {Size = UDim2.new(0, 120, 0, 56)})
-		else
-			tween(langMenu, 0.2, {Size = UDim2.new(0, 120, 0, 0)})
-			task.delay(0.2, function()
+		if langMenu.Visible then
+			tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 0)})
+			task.delay(0.3, function()
 				langMenu.Visible = false
 			end)
+		else
+			langMenu.Visible = true
+			tween(langMenu, 0.3, {Size = UDim2.new(0, 120, 0, 56)})
 		end
 	end)
 
@@ -360,16 +364,9 @@ function MUILib:CreateWindow(opts)
 	local sb = Instance.new("Frame")
 	sb.Size = UDim2.new(0, 220, 1, -84)
 	sb.Position = UDim2.new(0, 0, 0, 84)
-	sb.BackgroundColor3 = Theme.PanelBG
+	sb.BackgroundColor3 = Theme.MainBG
 	sb.Parent = main
 	round(sb, 4)
-
-	local sideSeparator = Instance.new("Frame")
-	sideSeparator.Size = UDim2.new(0, 3, 1, -84)
-	sideSeparator.Position = UDim2.new(0, 220, 0, 84)
-	sideSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
-	sideSeparator.BorderSizePixel = 0
-	sideSeparator.Parent = main
 
 	local ns = Instance.new("ScrollingFrame")
 	ns.Size = UDim2.new(1, 0, 1, -126)
@@ -401,7 +398,7 @@ function MUILib:CreateWindow(opts)
 	navIcon.Size = UDim2.fromOffset(14, 14)
 	navIcon.Position = UDim2.new(0, 8, 0.5, -7)
 	navIcon.BackgroundTransparency = 1
-	navIcon.Image = "rbxassetid://15999597378"
+	navIcon.Image = "rbxassetid://15999597350"
 	navIcon.ImageColor3 = Theme.TextGray
 	navIcon.Parent = navSearch
 
@@ -418,7 +415,7 @@ function MUILib:CreateWindow(opts)
 	navBox.TextSize = 12
 	navBox.TextXAlignment = "Left"
 	navBox.TextYAlignment = "Center"
-	navBox.ClearTextOnFocus = false
+	navBox.ClearTextOnFocus = true
 	navBox.Parent = navSearch
 
 	navBox.FocusLost:Connect(function()
@@ -480,13 +477,123 @@ function MUILib:CreateWindow(opts)
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
 
+	local sb = Instance.new("Frame")
+	sb.Size = UDim2.new(0, 220, 1, -84)
+	sb.Position = UDim2.new(0, 0, 0, 84)
+	sb.BackgroundColor3 = Theme.MainBG
+	sb.Parent = main
+	round(sb, 4)
+
+	local ns = Instance.new("ScrollingFrame")
+	ns.Size = UDim2.new(1, 0, 1, -126)
+	ns.Position = UDim2.new(0, 0, 0, 84)
+	ns.BackgroundTransparency = 1
+	ns.BorderSizePixel = 0
+	ns.ScrollBarThickness = 8
+	ns.ScrollBarImageTransparency = 0.3
+	ns.ScrollingDirection = Enum.ScrollingDirection.Y
+	ns.CanvasSize = UDim2.new(0, 0, 0, 0)
+	ns.Parent = sb
+	local nsLayout = Instance.new("UIListLayout", ns)
+	nsLayout.Padding = UDim.new(0, 2)
+
+	ns:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		ns.CanvasSize = UDim2.new(0, 0, 0, nsLayout.AbsoluteContentSize.Y)
+	end)
+
+-- поиск по подвкладкам (героям) в навигации
+	local navSearch = Instance.new("Frame")
+	navSearch.Size = UDim2.new(1, -30, 0, 26)
+	navSearch.Position = UDim2.new(0, 15, 0, 40)
+	navSearch.BackgroundColor3 = defaultTheme.SearchBackground
+	navSearch.ZIndex = 10
+	navSearch.Parent = sb
+	round(navSearch, 4)
+
+	local navIcon = Instance.new("ImageLabel")
+	navIcon.Size = UDim2.fromOffset(14, 14)
+	navIcon.Position = UDim2.new(0, 8, 0.5, -7)
+	navIcon.BackgroundTransparency = 1
+	navIcon.Image = "rbxassetid://15999597350"
+	navIcon.ImageColor3 = Theme.TextGray
+	navIcon.Parent = navSearch
+
+	local navBox = Instance.new("TextBox")
+	navBox.Size = UDim2.new(1, -10, 1, 0)
+	navBox.Position = UDim2.new(0, 24, 0, 0)
+	navBox.BackgroundTransparency = 1
+	navBox.Text = ""
+	navBox.PlaceholderText = "Search heroes"
+	navBox.PlaceholderColor3 = Theme.TextGray
+	navBox.TextColor3 = Theme.Text
+	navBox.TextTransparency = 0
+navBox.Font = "Gotham"
+	navBox.TextSize = 12
+	navBox.TextXAlignment = "Left"
+	navBox.TextYAlignment = "Center"
+    navBox.ClearTextOnFocus = false
+	navBox.Parent = navSearch
+
+	navBox.FocusLost:Connect(function()
+		local q = string.lower(navBox.Text or "")
+		for _, child in ipairs(ns:GetChildren()) do
+			if child:IsA("TextButton") then
+				local txt = string.lower(child.Name or child.Text or "")
+				child.Visible = (q == "" or txt:find(q, 1, true))
+			end
+		end
+	end)
+
+	local prof = Instance.new("Frame")
+	prof.Size = UDim2.new(1, -16, 0, 58)
+	prof.Position = UDim2.new(0, 8, 1, -66)
+	prof.BackgroundColor3 = defaultTheme.SearchBackground
+	prof.Parent = sb
+	round(prof, 4)
+
+	local sideDivider = Instance.new("Frame")
+	sideDivider.Size = UDim2.new(0, 3, 1, -49)
+	sideDivider.Position = UDim2.new(1, -3, 0, 49)
+	sideDivider.BackgroundColor3 = Theme.Border
+	sideDivider.BorderSizePixel = 0
+	sideDivider.Parent = sb
+
+	local av = Instance.new("ImageLabel")
+	av.Size = UDim2.fromOffset(36, 36)
+	av.Position = UDim2.new(0, 15, 0.5, -18)
+	av.BackgroundTransparency = 1
+	av.Image = "rbxassetid://13000639907"
+	av.Parent = prof
+	round(av, 18)
+
+	local uN = Instance.new("TextLabel")
+	uN.Text = (Players.LocalPlayer and Players.LocalPlayer.Name) or "Player"
+	uN.Size = UDim2.new(1, -65, 0, 15)
+	uN.Position = UDim2.new(0, 60, 0.5, -10)
+	uN.BackgroundTransparency = 1
+	uN.TextColor3 = Theme.Text
+	uN.Font = "GothamBold"
+	uN.TextSize = 13
+	uN.TextXAlignment = "Left"
+	uN.Parent = prof
+
+	local lp = Players.LocalPlayer
+	if lp then
+		local ok, thumb = pcall(function()
+			return Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100)
+		end)
+		if ok and thumb then
+			av.Image = thumb
+		end
+	end
+
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
-			t.P.Size = UDim2.new(1, -30, 1, -20)
-			t.P.Position = UDim2.new(0, 15, 0, 30)
-			t.P.BackgroundTransparency = 1
-			t.P.BorderSizePixel = 0
-			t.P.Visible = false
+		t.P.Size = UDim2.new(1, -30, 1, -20)
+		t.P.Position = UDim2.new(0, 15, 0, 20)
+		t.P.BackgroundTransparency = 1
+		t.P.BorderSizePixel = 0
+		t.P.Visible = false
 		-- Скролл есть, но сам скроллбар невидим
 		t.P.ScrollBarThickness = 4
 		t.P.ScrollBarImageTransparency = 1
@@ -508,13 +615,15 @@ function MUILib:CreateWindow(opts)
 		
 		local indicator = Instance.new("Frame")
 		indicator.Name = "Indicator"
-		indicator.Size = UDim2.new(1, 0, 0, 2)
-		indicator.Position = UDim2.new(0, 0, 1, -2)
+		indicator.Size = UDim2.new(1, 0, 0, 3)
+		indicator.Position = UDim2.new(0, 0, 1, -3)
 		indicator.BackgroundColor3 = Theme.Accent
 		indicator.BorderSizePixel = 0
 		indicator.Visible = false
 		indicator.Parent = t.B
-		round(indicator, 6)
+		local indCorner = Instance.new("UICorner")
+		indCorner.CornerRadius = UDim.new(0, 10)
+		indCorner.Parent = indicator
 		
 		t.B.MouseButton1Click:Connect(function()
 			for _, v in pairs(self.Tabs) do 
@@ -560,7 +669,7 @@ function MUILib:CreateWindow(opts)
 			ind.BackgroundTransparency = 1
 			ind.Parent = e
 			local indCorner = Instance.new("UICorner")
-			indCorner.CornerRadius = UDim.new(0, 6)
+			indCorner.CornerRadius = UDim.new(0, 10)
 			indCorner.Parent = ind
 
 			-- Create content frame for this hero
@@ -1260,72 +1369,78 @@ function MUILib:Notify(opts)
 	screen.Parent = CoreGui
 
 	local frame = Instance.new("Frame")
-	frame.Size = UDim2.fromOffset(280, 80)
+	frame.Size = UDim2.fromOffset(320, 90)
 	frame.AnchorPoint = Vector2.new(1, 1)
 	frame.Position = UDim2.new(1, -20, 1, -20)
 	frame.BackgroundColor3 = defaultTheme.PanelBackground
 	frame.BorderSizePixel = 0
 	frame.Parent = screen
-	round(frame, 8)
+	round(frame, 12)
 
 	local shadow = Instance.new("Frame")
-	shadow.Size = UDim2.new(1, 4, 1, 4)
-	shadow.Position = UDim2.new(0, -2, 0, -2)
+	shadow.Size = UDim2.new(1, 6, 1, 6)
+	shadow.Position = UDim2.new(0, -3, 0, -3)
 	shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	shadow.BackgroundTransparency = 0.9
+	shadow.BackgroundTransparency = 0.85
 	shadow.BorderSizePixel = 0
 	shadow.ZIndex = -1
 	shadow.Parent = frame
+	round(shadow, 12)
 
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = defaultTheme.Accent
-	stroke.Thickness = 1
-	stroke.Parent = frame
+	local accentBar = Instance.new("Frame")
+	accentBar.Size = UDim2.new(0, 4, 1, 0)
+	accentBar.Position = UDim2.new(0, 0, 0, 0)
+	accentBar.BackgroundColor3 = defaultTheme.Accent
+	accentBar.BorderSizePixel = 0
+	accentBar.Parent = frame
+	round(accentBar, 2)
 
 	local logo = Instance.new("ImageLabel")
-	logo.Size = UDim2.fromOffset(32, 32)
-	logo.Position = UDim2.new(0, 10, 0, 10)
+	logo.Size = UDim2.fromOffset(40, 40)
+	logo.Position = UDim2.new(0, 16, 0.5, -20)
 	logo.BackgroundTransparency = 1
 	logo.Image = "rbxassetid://75683973301629"
 	logo.Parent = frame
-	round(logo, 16)
+	round(logo, 20)
 
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -60, 0, 20)
-	titleLabel.Position = UDim2.new(0, 52, 0, 10)
+	titleLabel.Size = UDim2.new(1, -72, 0, 22)
+	titleLabel.Position = UDim2.new(0, 68, 0, 16)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Font = "GothamBold"
 	titleLabel.Text = title
-	titleLabel.TextSize = 14
+	titleLabel.TextSize = 15
 	titleLabel.TextColor3 = defaultTheme.TextPrimary
 	titleLabel.TextXAlignment = "Left"
+	titleLabel.TextTruncate = "AtEnd"
 	titleLabel.Parent = frame
 
 	local textLabel = Instance.new("TextLabel")
-	textLabel.Size = UDim2.new(1, -60, 1, -52)
-	textLabel.Position = UDim2.new(0, 52, 0, 32)
+	textLabel.Size = UDim2.new(1, -72, 1, -42)
+	textLabel.Position = UDim2.new(0, 68, 0, 40)
 	textLabel.BackgroundTransparency = 1
 	textLabel.Font = "Gotham"
 	textLabel.TextWrapped = true
 	textLabel.Text = text
-	textLabel.TextSize = 12
+	textLabel.TextSize = 13
 	textLabel.TextColor3 = defaultTheme.TextSecondary
 	textLabel.TextXAlignment = "Left"
 	textLabel.TextYAlignment = "Top"
+	textLabel.TextTruncate = "AtEnd"
 	textLabel.Parent = frame
 
 	local progress = Instance.new("Frame")
-	progress.Size = UDim2.new(1, 0, 0, 4)
-	progress.Position = UDim2.new(0, 0, 1, -4)
+	progress.Size = UDim2.new(1, 0, 0, 3)
+	progress.Position = UDim2.new(0, 0, 1, -3)
 	progress.BackgroundColor3 = defaultTheme.Accent
 	progress.BorderSizePixel = 0
 	progress.Parent = frame
-	round(progress, 2)
+	round(progress, 1)
 
-	frame.Size = UDim2.fromOffset(280, 72)
+	frame.Size = UDim2.fromOffset(320, 90)
 	frame.BackgroundTransparency = 1
-	frame.Size = UDim2.fromOffset(0, 72)
-	tween(frame, 0.4, {Size = UDim2.fromOffset(280, 72), BackgroundTransparency = 0, Position = UDim2.new(1, -20, 1, -20)})
+	frame.Size = UDim2.fromOffset(0, 90)
+	tween(frame, 0.4, {Size = UDim2.fromOffset(320, 90), BackgroundTransparency = 0, Position = UDim2.new(1, -20, 1, -20)})
 
 	local elapsed = 0
 	local step = 0.03
@@ -1333,12 +1448,12 @@ function MUILib:Notify(opts)
 		while elapsed < duration do
 			task.wait(step)
 			elapsed = elapsed + step
-		progress.Size = UDim2.new(1 - (elapsed / duration), 0, 0, 4)
+			progress.Size = UDim2.new(1 - (elapsed / duration), 0, 0, 3)
 		end
 	end)
 
 	task.delay(duration, function()
-		tween(frame, 0.4, {Size = UDim2.fromOffset(0, 72), BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
+		tween(frame, 0.4, {Size = UDim2.fromOffset(0, 90), BackgroundTransparency = 1, Position = UDim2.new(1, -20, 1, 20)})
 		task.delay(0.45, function()
 			if screen then
 				screen:Destroy()
