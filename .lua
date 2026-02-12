@@ -582,23 +582,49 @@ function MUILib:CreateWindow(opts)
 		function t:AddSideEntry(text)
 			local e = Instance.new("TextButton")
 			e.Name = text
-			e.Size = UDim2.new(1, 0, 0, 32)
+			e.Size = UDim2.new(1, -8, 0, 30)
+			e.Position = UDim2.new(0, 4, 0, 0)
+			e.BackgroundColor3 = Theme.PanelBG
 			e.BackgroundTransparency = 1
-			e.Text = "      " .. text
-			e.TextColor3 = Theme.TextGray
-			e.Font = "GothamBold"
-			e.TextSize = 14
-			e.TextXAlignment = "Left"
+			e.Text = ""
+			e.AutoButtonColor = false
 			e.Parent = ns
+
+			-- фон выбранной подвкладки
+			local bg = Instance.new("Frame")
+			bg.Size = UDim2.new(1, 0, 1, 0)
+			bg.Position = UDim2.new(0, 0, 0, 0)
+			bg.BackgroundColor3 = Theme.PanelBG
+			bg.BackgroundTransparency = 1
+			bg.BorderSizePixel = 0
+			bg.Parent = e
+			local bgCorner = Instance.new("UICorner")
+			bgCorner.CornerRadius = UDim.new(0, 6)
+			bgCorner.Parent = bg
+
+			-- круглая точка слева
 			local ind = Instance.new("Frame")
-			ind.Size = UDim2.new(0, 3, 0, 18)
-			ind.Position = UDim2.new(0, 8, 0.5, -9)
+			ind.Size = UDim2.new(0, 6, 0, 6)
+			ind.Position = UDim2.new(0, 10, 0.5, -3)
 			ind.BackgroundColor3 = Theme.Accent
 			ind.BackgroundTransparency = 1
-			ind.Parent = e
+			ind.BorderSizePixel = 0
+			ind.Parent = bg
 			local indCorner = Instance.new("UICorner")
-			indCorner.CornerRadius = UDim.new(0, 10)
+			indCorner.CornerRadius = UDim.new(1, 0)
 			indCorner.Parent = ind
+
+			-- текст подвкладки
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -30, 1, 0)
+			label.Position = UDim2.new(0, 26, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = text
+			label.TextColor3 = Theme.TextGray
+			label.Font = "GothamBold"
+			label.TextSize = 14
+			label.TextXAlignment = "Left"
+			label.Parent = bg
 
 			-- Create content frame for this hero
 			local contentFrame = Instance.new("Frame")
@@ -619,13 +645,13 @@ function MUILib:CreateWindow(opts)
 
 			local function setSelected(sel)
 				if sel then
-					e.TextColor3 = Theme.Text
-					e.BackgroundTransparency = 1
+					label.TextColor3 = Theme.Text
+					bg.BackgroundTransparency = 0
 					ind.BackgroundTransparency = 0
 					contentFrame.Visible = true
 				else
-					e.TextColor3 = Theme.TextGray
-					e.BackgroundTransparency = 1
+					label.TextColor3 = Theme.TextGray
+					bg.BackgroundTransparency = 1
 					ind.BackgroundTransparency = 1
 					contentFrame.Visible = false
 				end
@@ -633,13 +659,15 @@ function MUILib:CreateWindow(opts)
 
 			e.MouseEnter:Connect(function()
 				if t.CurrentSideEntry ~= e then
-					tween(e, 0.15, {TextColor3 = Theme.Text})
+					tween(label, 0.15, {TextColor3 = Theme.Text})
+					tween(ind, 0.15, {BackgroundTransparency = 0.5})
 				end
 			end)
 
 			e.MouseLeave:Connect(function()
 				if t.CurrentSideEntry ~= e then
-					tween(e, 0.15, {TextColor3 = Theme.TextGray})
+					tween(label, 0.15, {TextColor3 = Theme.TextGray})
+					tween(ind, 0.15, {BackgroundTransparency = 1})
 				end
 			end)
 
