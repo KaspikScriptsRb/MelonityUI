@@ -196,7 +196,7 @@ function MUILib:CreateWindow(opts)
 
 	-- Светлая разделительная линия между верхним интерфейсом и вкладками
 	local topSeparator = Instance.new("Frame")
-	topSeparator.Size = UDim2.new(1, 0, 0, 3)
+	topSeparator.Size = UDim2.new(1, 0, 0, 1)
 	topSeparator.Position = UDim2.new(0, 0, 0, 45)
 	topSeparator.BackgroundColor3 = Theme.Border
 	topSeparator.BorderSizePixel = 0
@@ -412,8 +412,9 @@ function MUILib:CreateWindow(opts)
 	end)
 
 	local th = Instance.new("Frame")
-	th.Size = UDim2.new(1, 0, 0, 36)
-	th.Position = UDim2.new(0, 0, 0, 48)
+	th.Name = "TabFrame"
+	th.Size = UDim2.new(1, -220, 0, 36)
+	th.Position = UDim2.new(0, 220, 0, 46)
 	th.BackgroundTransparency = 1
 	th.Parent = main
 	round(th, 0)
@@ -422,6 +423,10 @@ function MUILib:CreateWindow(opts)
 	tl.Padding = UDim.new(0, 20)
 	tl.VerticalAlignment = "Center"
 	tl.Parent = th
+	
+	local thPadding = Instance.new("UIPadding")
+	thPadding.PaddingLeft = UDim.new(0, 20)
+	thPadding.Parent = th
 
 	local sb = Instance.new("Frame")
 	sb.Size = UDim2.new(0, 220, 1, -48)
@@ -468,10 +473,11 @@ function MUILib:CreateWindow(opts)
 	round(prof, 4)
 
 	local sideDivider = Instance.new("Frame")
-	sideDivider.Size = UDim2.new(0, 3, 1, -49)
-	sideDivider.Position = UDim2.new(1, -3, 0, 49)
+	sideDivider.Size = UDim2.new(0, 1, 1, 0)
+	sideDivider.Position = UDim2.new(1, 0, 0, 0)
 	sideDivider.BackgroundColor3 = Theme.Border
 	sideDivider.BorderSizePixel = 0
+	sideDivider.BackgroundTransparency = 0
 	sideDivider.Parent = sb
 
 	local av = Instance.new("ImageLabel")
