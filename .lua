@@ -198,8 +198,9 @@ function MUILib:CreateWindow(opts)
 	local topSeparator = Instance.new("Frame")
 	topSeparator.Size = UDim2.new(1, 0, 0, 3)
 	topSeparator.Position = UDim2.new(0, 0, 0, 45)
-	topSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+	topSeparator.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
 	topSeparator.BorderSizePixel = 0
+	topSeparator.BackgroundTransparency = 0.35
 	topSeparator.Parent = main
 
 	local logo = Instance.new("ImageLabel")
@@ -461,7 +462,8 @@ function MUILib:CreateWindow(opts)
 	-- поиск по подвкладкам (героям) в навигации
 	local prof = Instance.new("Frame")
 	prof.Size = UDim2.new(1, -16, 0, 58)
-	prof.Position = UDim2.new(0, 8, 0, 0)
+	prof.AnchorPoint = Vector2.new(0, 1)
+	prof.Position = UDim2.new(0, 8, 1, -8)
 	prof.BackgroundColor3 = Theme.PanelBG
 	prof.Parent = sb
 	round(prof, 4)
@@ -674,7 +676,15 @@ function MUILib:CreateWindow(opts)
 			e.MouseButton1Click:Connect(function()
 				-- Сбросить старую выбранную подвкладку внутри этого таба
 				if t.CurrentSideEntry and t.CurrentSideEntry ~= e then
-					local oldInd = t.CurrentSideEntry:FindFirstChildOfClass("Frame")
+					local oldBg = t.CurrentSideEntry:FindFirstChild("Bg")
+					local oldInd = oldBg and oldBg:FindFirstChild("Dot")
+					local oldLabel = oldBg and oldBg:FindFirstChild("Label")
+					if oldLabel then
+						tween(oldLabel, 0.15, {TextColor3 = Theme.TextGray})
+					end
+					if oldBg then
+						tween(oldBg, 0.15, {BackgroundTransparency = 1})
+					end
 					if oldInd then
 						tween(oldInd, 0.15, {BackgroundTransparency = 1})
 					end
@@ -685,7 +695,6 @@ function MUILib:CreateWindow(opts)
 							oldContent.Visible = false
 						end)
 					end
-					tween(t.CurrentSideEntry, 0.15, {TextColor3 = Theme.TextGray, BackgroundTransparency = 1})
 				end
 
 				-- Скрыть все Content-фреймы этого таба (на случай, если что-то осталось видимым)
@@ -698,7 +707,8 @@ function MUILib:CreateWindow(opts)
 				t.CurrentSideEntry = e
 				contentFrame.BackgroundTransparency = 1
 				contentFrame.Visible = true
-				tween(e, 0.15, {TextColor3 = Theme.Text, BackgroundTransparency = 1})
+				tween(label, 0.15, {TextColor3 = Theme.Text})
+				tween(bg, 0.15, {BackgroundTransparency = 0})
 				tween(ind, 0.15, {BackgroundTransparency = 0})
 			end)
 			if not t.CurrentSideEntry then
