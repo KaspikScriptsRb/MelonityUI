@@ -198,9 +198,9 @@ function MUILib:CreateWindow(opts)
 	local topSeparator = Instance.new("Frame")
 	topSeparator.Size = UDim2.new(1, 0, 0, 3)
 	topSeparator.Position = UDim2.new(0, 0, 0, 45)
-	topSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
+	topSeparator.BackgroundColor3 = Theme.Border
 	topSeparator.BorderSizePixel = 0
-	topSeparator.BackgroundTransparency = 0.35
+	topSeparator.BackgroundTransparency = 0
 	topSeparator.Parent = main
 
 	local logo = Instance.new("ImageLabel")
@@ -211,15 +211,14 @@ function MUILib:CreateWindow(opts)
 	logo.Parent = top
 
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -20, 0, 18)
-	titleLabel.Position = UDim2.new(0, 10, 0, 12)
+	titleLabel.Size = UDim2.new(0, 300, 0, 30)
+	titleLabel.Position = UDim2.new(0, 50, 0.5, -15)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = (opts and opts.Title) or "Melonity"
 	titleLabel.TextColor3 = Theme.Text
 	titleLabel.Font = "GothamBold"
-	titleLabel.TextSize = 13
+	titleLabel.TextSize = 18
 	titleLabel.TextXAlignment = "Left"
-	titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
 	titleLabel.Parent = top
 
 	local searchH = Instance.new("Frame")
@@ -239,19 +238,19 @@ function MUILib:CreateWindow(opts)
 
 	local gInp = Instance.new("TextBox")
 	gInp.Size = UDim2.new(1, -10, 1, 0)
-	gInp.Position = UDim2.new(0, 30, 0, 0)
+	gInp.Position = UDim2.new(0, 5, 0, 0)
 	gInp.BackgroundTransparency = 1
 	gInp.Text = ""
 	gInp.PlaceholderText = "Search sections"
 	gInp.PlaceholderColor3 = Theme.TextGray
 	gInp.TextColor3 = Theme.Text
-	gInp.TextTransparency = 0
 	gInp.Font = "GothamBold"
 	gInp.TextSize = 13
 	gInp.TextXAlignment = "Left"
 	gInp.TextYAlignment = "Center"
-	gInp.Parent = searchH
 	gInp.ClearTextOnFocus = false
+	gInp.ClipsDescendants = true
+	gInp.Parent = searchH
 
 	-- Окно результатов поиска секций
 	local searchResults = Instance.new("Frame")
@@ -938,7 +937,7 @@ function MUILib:CreateWindow(opts)
 
 					local valueBg = Instance.new("Frame")
 					valueBg.Size = UDim2.new(0, 40, 0, 20)
-					valueBg.Position = UDim2.new(1, -10, 0.5, -10)
+					valueBg.Position = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN + 10), 0.5, -10)
 					valueBg.AnchorPoint = Vector2.new(1, 0)
 					valueBg.BackgroundColor3 = Theme.MainBG
 					valueBg.BorderSizePixel = 0
@@ -1313,6 +1312,7 @@ function MUILib:CreateWindow(opts)
 					box.Position = UDim2.new(1, -120, 0.5, -10)
 					box.BackgroundColor3 = defaultTheme.SearchBackground
 					box.ClearTextOnFocus = false
+					box.ClipsDescendants = true
 					box.Text = default
 					box.PlaceholderText = placeholder
 					box.PlaceholderColor3 = Theme.TextGray
