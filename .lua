@@ -413,20 +413,27 @@ function MUILib:CreateWindow(opts)
 	end)
 
 	local th = Instance.new("Frame")
-	th.Size = UDim2.new(1, 0, 0, 36)
-	th.Position = UDim2.new(0, 0, 0, 48)
-	th.BackgroundColor3 = Theme.TopBarBG
+	th.Size = UDim2.new(1, 0, 0, 32)
+	th.Position = UDim2.new(0, 0, 0, 45)
+	th.BackgroundColor3 = Theme.MainBG
+	th.BackgroundTransparency = 0
+	th.BorderSizePixel = 0
 	th.Parent = main
 	round(th, 0)
+	
 	local tl = Instance.new("UIListLayout")
 	tl.FillDirection = "Horizontal"
 	tl.Padding = UDim.new(0, 20)
 	tl.VerticalAlignment = "Center"
 	tl.Parent = th
+	
+	local thPadding = Instance.new("UIPadding")
+	thPadding.PaddingLeft = UDim.new(0, 15)
+	thPadding.Parent = th
 
 	local sb = Instance.new("Frame")
-	sb.Size = UDim2.new(0, 220, 1, -48)
-	sb.Position = UDim2.new(0, 0, 0, 48)
+	sb.Size = UDim2.new(0, 220, 1, -77)
+	sb.Position = UDim2.new(0, 0, 0, 77)
 	sb.BackgroundColor3 = Theme.MainBG
 	sb.Parent = main
 	round(sb, 4)
@@ -506,8 +513,8 @@ function MUILib:CreateWindow(opts)
 	end
 
 	local ct = Instance.new("Frame")
-	ct.Size = UDim2.new(1, -220, 1, -48)
-	ct.Position = UDim2.new(0, 220, 0, 48)
+	ct.Size = UDim2.new(1, -220, 1, -77)
+	ct.Position = UDim2.new(0, 220, 0, 77)
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
 
@@ -583,14 +590,15 @@ function MUILib:CreateWindow(opts)
 		end
 
 		function t:AddSideEntry(text)
-		e.Name = text
-		e.Size = UDim2.new(1, -8, 0, 30)
-		e.Position = UDim2.new(0, 4, 0, 0)
-		e.BackgroundColor3 = Theme.PanelBG
-		e.BackgroundTransparency = 1
-		e.Text = ""
-		e.AutoButtonColor = false
-		e.Parent = ns
+			local e = Instance.new("TextButton")
+			e.Name = text
+			e.Size = UDim2.new(1, -8, 0, 30)
+			e.Position = UDim2.new(0, 4, 0, 0)
+			e.BackgroundColor3 = Theme.PanelBG
+			e.BackgroundTransparency = 1
+			e.Text = ""
+			e.AutoButtonColor = false
+			e.Parent = ns
 
 		-- фон выбранной подвкладки
 		local bg = Instance.new("Frame")
