@@ -1,4 +1,4 @@
-TweenService = game:GetService("TweenService")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -11,6 +11,10 @@ local notifyOffset = 0
 local notifySpacing = 85
 
 local currentLanguage = "ru" -- "ru" or "en"
+
+local function tween(o, t, p)
+	TweenService:Create(o, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), p):Play()
+end
 
 local function resolveText(text)
 	if type(text) == "table" then
