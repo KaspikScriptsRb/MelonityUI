@@ -1,4 +1,4 @@
-local TweenService = game:GetService("TweenService")
+TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
