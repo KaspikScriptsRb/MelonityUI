@@ -500,7 +500,7 @@ function MUILib:CreateWindow(opts)
 		if ok and thumb then
 			av.Image = thumb
 		end
-	end
+	end)
 
 	local ct = Instance.new("Frame")
 	ct.Size = UDim2.new(1, -220, 1, -48)
