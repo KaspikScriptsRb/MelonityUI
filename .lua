@@ -198,9 +198,9 @@ function MUILib:CreateWindow(opts)
 	local topSeparator = Instance.new("Frame")
 	topSeparator.Size = UDim2.new(1, 0, 0, 3)
 	topSeparator.Position = UDim2.new(0, 0, 0, 45)
-	topSeparator.BackgroundColor3 = Color3.fromRGB(60, 60, 75)
+	topSeparator.BackgroundColor3 = Theme.Border
 	topSeparator.BorderSizePixel = 0
-	topSeparator.BackgroundTransparency = 0.35
+	topSeparator.BackgroundTransparency = 0
 	topSeparator.Parent = main
 
 	local logo = Instance.new("ImageLabel")
@@ -211,14 +211,15 @@ function MUILib:CreateWindow(opts)
 	logo.Parent = top
 
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(0, 200, 0, 24)
-	titleLabel.Position = UDim2.new(0, 50, 0.5, -12)
+	titleLabel.Size = UDim2.new(1, -20, 0, 18)
+	titleLabel.Position = UDim2.new(0, 10, 0, 12)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = (opts and opts.Title) or "Melonity"
-	titleLabel.Font = "GothamBold"
-	titleLabel.TextSize = 15
 	titleLabel.TextColor3 = Theme.Text
+	titleLabel.Font = "GothamBold"
+	titleLabel.TextSize = 13
 	titleLabel.TextXAlignment = "Left"
+	titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
 	titleLabel.Parent = top
 
 	local searchH = Instance.new("Frame")
@@ -422,7 +423,6 @@ function MUILib:CreateWindow(opts)
 	tl.Padding = UDim.new(0, 20)
 	tl.VerticalAlignment = "Center"
 	tl.Parent = th
-	Instance.new("UIPadding", th).PaddingLeft = UDim.new(0, 20)
 
 	local sb = Instance.new("Frame")
 	sb.Size = UDim2.new(0, 220, 1, -48)
@@ -469,10 +469,11 @@ function MUILib:CreateWindow(opts)
 	round(prof, 4)
 
 	local sideDivider = Instance.new("Frame")
-	sideDivider.Size = UDim2.new(0, 3, 1, -49)
-	sideDivider.Position = UDim2.new(1, -3, 0, 49)
+	sideDivider.Size = UDim2.new(0, 1, 1, 0)
+	sideDivider.Position = UDim2.new(1, 0, 0, 0)
 	sideDivider.BackgroundColor3 = Theme.Border
 	sideDivider.BorderSizePixel = 0
+	sideDivider.BackgroundTransparency = 0
 	sideDivider.Parent = sb
 
 	local av = Instance.new("ImageLabel")
@@ -513,8 +514,8 @@ function MUILib:CreateWindow(opts)
 	function win:AddTopTab(name, icon)
 		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
 		t.TabName = name
-		t.P.Size = UDim2.new(1, -30, 1, -15)
-		t.P.Position = UDim2.new(0, 15, 0, 15)
+		t.P.Size = UDim2.new(1, -30, 1, -32)
+		t.P.Position = UDim2.new(0, 15, 0, 32)
 		t.P.BackgroundTransparency = 1
 		t.P.BorderSizePixel = 0
 		t.P.Visible = false
@@ -582,51 +583,54 @@ function MUILib:CreateWindow(opts)
 		end
 
 		function t:AddSideEntry(text)
-			local e = Instance.new("TextButton")
-			e.Name = text
-			e.Size = UDim2.new(1, -8, 0, 30)
-			e.Position = UDim2.new(0, 4, 0, 0)
-			e.BackgroundColor3 = Theme.PanelBG
-			e.BackgroundTransparency = 1
-			e.Text = ""
-			e.AutoButtonColor = false
-			e.Parent = ns
+		e.Name = text
+		e.Size = UDim2.new(1, -8, 0, 30)
+		e.Position = UDim2.new(0, 4, 0, 0)
+		e.BackgroundColor3 = Theme.PanelBG
+		e.BackgroundTransparency = 1
+		e.Text = ""
+		e.AutoButtonColor = false
+		e.Parent = ns
 
-			-- фон выбранной подвкладки
-			local bg = Instance.new("Frame")
-			bg.Size = UDim2.new(1, 0, 1, 0)
-			bg.Position = UDim2.new(0, 0, 0, 0)
-			bg.BackgroundColor3 = Theme.PanelBG
-			bg.BackgroundTransparency = 1
-			bg.BorderSizePixel = 0
-			bg.Parent = e
-			local bgCorner = Instance.new("UICorner")
-			bgCorner.CornerRadius = UDim.new(0, 6)
-			bgCorner.Parent = bg
+		-- фон выбранной подвкладки
+		local bg = Instance.new("Frame")
+		bg.Name = "Bg"
+		bg.Size = UDim2.new(1, 0, 1, 0)
+		bg.Position = UDim2.new(0, 0, 0, 0)
+		bg.BackgroundColor3 = Theme.PanelBG
+		bg.BackgroundTransparency = 1
+		bg.BorderSizePixel = 0
+		bg.Parent = e
+		local bgCorner = Instance.new("UICorner")
+		bgCorner.CornerRadius = UDim.new(0, 6)
+		bgCorner.Parent = bg
 
-			-- круглая точка слева
-			local ind = Instance.new("Frame")
-			ind.Size = UDim2.new(0, 6, 0, 6)
-			ind.Position = UDim2.new(0, 10, 0.5, -3)
-			ind.BackgroundColor3 = Theme.Accent
-			ind.BackgroundTransparency = 1
-			ind.BorderSizePixel = 0
-			ind.Parent = bg
-			local indCorner = Instance.new("UICorner")
-			indCorner.CornerRadius = UDim.new(1, 0)
-			indCorner.Parent = ind
+		-- круглая точка слева
+		local ind = Instance.new("Frame")
+		ind.Name = "Dot"
+		ind.Size = UDim2.new(0, 6, 0, 6)
+		ind.Position = UDim2.new(0, 10, 0.5, -3)
+		ind.BackgroundColor3 = Theme.Accent
+		ind.BackgroundTransparency = 1
+		ind.BorderSizePixel = 0
+		ind.Parent = bg
+		local indCorner = Instance.new("UICorner")
+		indCorner.CornerRadius = UDim.new(1, 0)
+		indCorner.Parent = ind
 
-			-- текст подвкладки
-			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -30, 1, 0)
-			label.Position = UDim2.new(0, 26, 0, 0)
-			label.BackgroundTransparency = 1
-			label.Text = text
-			label.TextColor3 = Theme.TextGray
-			label.Font = "GothamBold"
-			label.TextSize = 14
-			label.TextXAlignment = "Left"
-			label.Parent = bg
+		-- текст подвкладки
+		local label = Instance.new("TextLabel")
+		label.Name = "Label"
+		label.Size = UDim2.new(1, -30, 1, 0)
+		label.Position = UDim2.new(0, 26, 0, 0)
+		label.BackgroundTransparency = 1
+		label.Text = text
+		label.TextColor3 = Theme.TextGray
+		label.Font = "GothamBold"
+		label.TextSize = 14
+		label.TextXAlignment = "Left"
+		label.TextTruncate = Enum.TextTruncate.AtEnd
+		label.Parent = bg
 
 			-- Create content frame for this hero
 			local contentFrame = Instance.new("Frame")
@@ -747,6 +751,7 @@ function MUILib:CreateWindow(opts)
 				lt.Font = "GothamBold"
 				lt.TextSize = 13
 				lt.TextXAlignment = "Left"
+				lt.TextTruncate = Enum.TextTruncate.AtEnd
 				lt.Parent = sf
 				-- Зарегистрировать секцию в поисковом индексе
 				table.insert(searchEntries, {
@@ -787,6 +792,7 @@ function MUILib:CreateWindow(opts)
 					label.Font = "GothamBold"
 					label.TextSize = 12
 					label.TextXAlignment = "Left"
+					label.TextTruncate = Enum.TextTruncate.AtEnd
 					label.Parent = r
 
 					if o.SubText then
@@ -875,6 +881,7 @@ function MUILib:CreateWindow(opts)
 					label.Font = "GothamBold"
 					label.TextSize = 12
 					label.TextXAlignment = "Left"
+					label.TextTruncate = Enum.TextTruncate.AtEnd
 					label.Parent = row
 
 					local state = default
@@ -926,11 +933,13 @@ function MUILib:CreateWindow(opts)
 					label.Font = "GothamBold"
 					label.TextSize = 12
 					label.TextXAlignment = "Left"
+					label.TextTruncate = Enum.TextTruncate.AtEnd
 					label.Parent = r
 
 					local valueBg = Instance.new("Frame")
 					valueBg.Size = UDim2.new(0, 40, 0, 20)
-					valueBg.Position = UDim2.new(1, -(RIGHT_COLUMN_MARGIN + 60), 0.5, -10)
+					valueBg.Position = UDim2.new(1, -10, 0.5, -10)
+					valueBg.AnchorPoint = Vector2.new(1, 0)
 					valueBg.BackgroundColor3 = Theme.MainBG
 					valueBg.BorderSizePixel = 0
 					valueBg.Parent = r
@@ -942,9 +951,10 @@ function MUILib:CreateWindow(opts)
 					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 					valueLabel.Font = "GothamBold"
 					valueLabel.TextSize = 12
-					valueLabel.TextXAlignment = "Left"
+					valueLabel.TextXAlignment = "Center"
 					valueLabel.TextYAlignment = "Center"
 					valueLabel.Parent = valueBg
+					
 					valueLabel:GetPropertyChangedSignal("TextBounds"):Connect(function()
 						local bounds = valueLabel.TextBounds
 						valueBg.Size = UDim2.fromOffset(math.max(bounds.X + 12, 40), 20)
