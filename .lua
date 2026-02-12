@@ -198,9 +198,9 @@ function MUILib:CreateWindow(opts)
 	local topSeparator = Instance.new("Frame")
 	topSeparator.Size = UDim2.new(1, 0, 0, 3)
 	topSeparator.Position = UDim2.new(0, 0, 0, 45)
-	topSeparator.BackgroundColor3 = Theme.Border
+	topSeparator.BackgroundColor3 = Color3.fromRGB(80, 80, 90)
 	topSeparator.BorderSizePixel = 0
-	topSeparator.BackgroundTransparency = 0
+	topSeparator.BackgroundTransparency = 0.35
 	topSeparator.Parent = main
 
 	local logo = Instance.new("ImageLabel")
@@ -413,27 +413,20 @@ function MUILib:CreateWindow(opts)
 	end)
 
 	local th = Instance.new("Frame")
-	th.Size = UDim2.new(1, 0, 0, 32)
-	th.Position = UDim2.new(0, 0, 0, 45)
-	th.BackgroundColor3 = Theme.MainBG
-	th.BackgroundTransparency = 0
-	th.BorderSizePixel = 0
+	th.Size = UDim2.new(1, 0, 0, 36)
+	th.Position = UDim2.new(0, 0, 0, 48)
+	th.BackgroundTransparency = 1
 	th.Parent = main
 	round(th, 0)
-	
 	local tl = Instance.new("UIListLayout")
 	tl.FillDirection = "Horizontal"
 	tl.Padding = UDim.new(0, 20)
 	tl.VerticalAlignment = "Center"
 	tl.Parent = th
-	
-	local thPadding = Instance.new("UIPadding")
-	thPadding.PaddingLeft = UDim.new(0, 15)
-	thPadding.Parent = th
 
 	local sb = Instance.new("Frame")
-	sb.Size = UDim2.new(0, 220, 1, -77)
-	sb.Position = UDim2.new(0, 0, 0, 77)
+	sb.Size = UDim2.new(0, 220, 1, -48)
+	sb.Position = UDim2.new(0, 0, 0, 48)
 	sb.BackgroundColor3 = Theme.MainBG
 	sb.Parent = main
 	round(sb, 4)
@@ -476,11 +469,10 @@ function MUILib:CreateWindow(opts)
 	round(prof, 4)
 
 	local sideDivider = Instance.new("Frame")
-	sideDivider.Size = UDim2.new(0, 1, 1, 0)
-	sideDivider.Position = UDim2.new(1, 0, 0, 0)
+	sideDivider.Size = UDim2.new(0, 3, 1, -49)
+	sideDivider.Position = UDim2.new(1, -3, 0, 49)
 	sideDivider.BackgroundColor3 = Theme.Border
 	sideDivider.BorderSizePixel = 0
-	sideDivider.BackgroundTransparency = 0
 	sideDivider.Parent = sb
 
 	local av = Instance.new("ImageLabel")
@@ -513,8 +505,8 @@ function MUILib:CreateWindow(opts)
 	end
 
 	local ct = Instance.new("Frame")
-	ct.Size = UDim2.new(1, -220, 1, -77)
-	ct.Position = UDim2.new(0, 220, 0, 77)
+	ct.Size = UDim2.new(1, -220, 1, -48)
+	ct.Position = UDim2.new(0, 220, 0, 48)
 	ct.BackgroundTransparency = 1
 	ct.Parent = main
 
