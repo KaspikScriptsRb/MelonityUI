@@ -818,22 +818,26 @@ function MUILib:CreateWindow(opts)
 					bg.Size = UDim2.new(0, 36, 0, 18)
 					bg.Position = UDim2.new(1, -(36 + RIGHT_COLUMN_MARGIN), 0.5, -9)
 					bg.BackgroundColor3 = Theme.MainBG
+					bg.AutoButtonColor = false
 					bg.Text = ""
 					bg.Parent = r
 					round(bg, 9)
 
+					local stroke = addStroke(bg, Theme.Border, 1)
+
 					local dot = Instance.new("Frame")
-					dot.Size = UDim2.fromOffset(14, 14)
-					dot.Position = UDim2.new(0, 2, 0.5, -7)
+					dot.Size = UDim2.fromOffset(12, 12)
+					dot.Position = UDim2.new(0, 3, 0.5, -6)
 					dot.BackgroundColor3 = Theme.TextGray
 					dot.Parent = bg
-					round(dot, 7)
+					round(dot, 6)
 
 					local state = o.Default or false
 
 					local function update()
 						tween(bg, 0.2, {BackgroundColor3 = state and Theme.Accent or Theme.MainBG})
-						tween(dot, 0.2, {Position = state and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7), BackgroundColor3 = state and Theme.Text or Theme.TextGray})
+						tween(stroke, 0.2, {Color = state and Theme.Accent or Theme.Border})
+						tween(dot, 0.2, {Position = state and UDim2.new(1, -15, 0.5, -6) or UDim2.new(0, 3, 0.5, -6), BackgroundColor3 = state and Color3.fromRGB(255, 255, 255) or Theme.TextGray})
 						if o.Callback then o.Callback(state) end
 					end
 
@@ -867,20 +871,32 @@ function MUILib:CreateWindow(opts)
 					row.Parent = c
 
 					local box = Instance.new("TextButton")
-					box.Size = UDim2.fromOffset(12, 12)
-					box.Position = UDim2.new(0, 0, 0.5, -6)
+					box.Size = UDim2.fromOffset(16, 16)
+					box.Position = UDim2.new(0, 0, 0.5, -8)
 					box.BackgroundColor3 = Theme.MainBG
 					box.AutoButtonColor = false
 					box.Text = ""
 					box.Parent = row
-					round(box, 3)
+					round(box, 4)
 
-					local stroke = addStroke(box, Theme.ToggleOff, 1.5)
+					local stroke = addStroke(box, Theme.Border, 1)
+
+					local checkMark = Instance.new("ImageLabel")
+					checkMark.Size = UDim2.new(0, 10, 0, 10)
+					checkMark.Position = UDim2.new(0.5, 0, 0.5, 0)
+					checkMark.AnchorPoint = Vector2.new(0.5, 0.5)
+					checkMark.BackgroundTransparency = 1
+					checkMark.Image = "rbxassetid://3926305904"
+					checkMark.ImageRectOffset = Vector2.new(312, 4)
+					checkMark.ImageRectSize = Vector2.new(24, 24)
+					checkMark.ImageColor3 = Color3.fromRGB(255, 255, 255)
+					checkMark.ImageTransparency = 1
+					checkMark.Parent = box
 
 					local label = Instance.new("TextLabel")
 					label.Text = text
-					label.Size = UDim2.new(1, -20, 1, 0)
-					label.Position = UDim2.new(0, 20, 0, 0)
+					label.Size = UDim2.new(1, -26, 1, 0)
+					label.Position = UDim2.new(0, 26, 0, 0)
 					label.BackgroundTransparency = 1
 					label.TextColor3 = Theme.Text
 					label.Font = "GothamBold"
@@ -893,7 +909,8 @@ function MUILib:CreateWindow(opts)
 
 					local function apply()
 						tween(box, 0.2, {BackgroundColor3 = state and Theme.Accent or Theme.MainBG})
-						tween(stroke, 0.2, {Color = state and Theme.ToggleOn or Theme.ToggleOff})
+						tween(stroke, 0.2, {Color = state and Theme.Accent or Theme.Border})
+						tween(checkMark, 0.2, {ImageTransparency = state and 0 or 1})
 						if callback then
 							callback(state)
 						end
@@ -949,29 +966,31 @@ function MUILib:CreateWindow(opts)
 					valueBg.BorderSizePixel = 0
 					valueBg.Parent = r
 					round(valueBg, 4)
+					addStroke(valueBg, Theme.Border, 1)
 
 					local valueLabel = Instance.new("TextLabel")
 					valueLabel.Size = UDim2.new(1, 0, 1, 0)
 					valueLabel.BackgroundTransparency = 1
-					valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+					valueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 					valueLabel.Font = "GothamBold"
-					valueLabel.TextSize = 12
+					valueLabel.TextSize = 11
 					valueLabel.TextXAlignment = "Center"
 					valueLabel.TextYAlignment = "Center"
 					valueLabel.Parent = valueBg
 					
 					valueLabel:GetPropertyChangedSignal("TextBounds"):Connect(function()
 						local bounds = valueLabel.TextBounds
-						valueBg.Size = UDim2.fromOffset(math.max(bounds.X + 12, 40), 20)
+						valueBg.Size = UDim2.fromOffset(math.max(bounds.X + 16, 40), 20)
 					end)
 
 					local bar = Instance.new("Frame")
 					bar.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 4)
-					bar.Position = UDim2.new(0, 0, 1, -6)
+					bar.Position = UDim2.new(0, 0, 1, -8)
 					bar.BackgroundColor3 = Theme.MainBG
 					bar.BorderSizePixel = 0
 					bar.Parent = r
 					round(bar, 2)
+					addStroke(bar, Theme.Border, 1)
 
 					local fill = Instance.new("Frame")
 					fill.Size = UDim2.new(0, 0, 1, 0)
@@ -981,13 +1000,14 @@ function MUILib:CreateWindow(opts)
 					round(fill, 2)
 
 					local knob = Instance.new("Frame")
-					knob.Size = UDim2.fromOffset(10, 10)
+					knob.Size = UDim2.fromOffset(12, 12)
 					knob.AnchorPoint = Vector2.new(0.5, 0.5)
 					knob.Position = UDim2.new(0, 0, 0.5, 0)
-					knob.BackgroundColor3 = Theme.Text
+					knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 					knob.BorderSizePixel = 0
 					knob.Parent = bar
-					round(knob, 5)
+					round(knob, 6)
+					addStroke(knob, Theme.Border, 1)
 
 					local current = default
 					local draggingSlider = false
@@ -1058,26 +1078,28 @@ function MUILib:CreateWindow(opts)
 
 				function sec:AddItemToggle(o)
 					o = o or {}
-					if not c:FindFirstChild("Grid") then
-						local g = Instance.new("Frame")
+					local g = c:FindFirstChild("Grid")
+					if not g then
+						g = Instance.new("Frame")
 						g.Name = "Grid"
 						g.Size = UDim2.new(1, -12, 0, 0)
 						g.AutomaticSize = "Y"
 						g.BackgroundTransparency = 1
 						g.Parent = c
 						local gl = Instance.new("UIGridLayout")
-						gl.CellSize = UDim2.fromOffset(38, 38)
-						gl.CellPadding = UDim2.fromOffset(6, 6)
+						gl.CellSize = UDim2.fromOffset(40, 40)
+						gl.CellPadding = UDim2.fromOffset(8, 8)
 						gl.Parent = g
 					end
 
 					local b = Instance.new("TextButton")
 					b.BackgroundColor3 = Theme.MainBG
+					b.AutoButtonColor = false
 					b.Text = ""
-					b.Parent = c.Grid
-					round(b, 4)
+					b.Parent = g
+					round(b, 6)
 
-					local s = addStroke(b, Theme.ToggleOff, 1.5)
+					local s = addStroke(b, Theme.Border, 1)
 					local img = Instance.new("ImageLabel")
 					img.Size = UDim2.new(0.65, 0, 0.65, 0)
 					img.Position = UDim2.new(0.175, 0, 0.175, 0)
@@ -1088,7 +1110,7 @@ function MUILib:CreateWindow(opts)
 					local state = o.Default or false
 
 					local function apply()
-						tween(s, 0.2, {Color = state and Theme.ToggleOn or Theme.ToggleOff})
+						tween(s, 0.2, {Color = state and Theme.Accent or Theme.Border})
 						if o.Callback then o.Callback(state) end
 					end
 
@@ -1224,16 +1246,17 @@ function MUILib:CreateWindow(opts)
 					end
 
 					local btn = Instance.new("TextButton")
-					btn.Size = UDim2.new(0, 60, 0, 20)
-					btn.Position = UDim2.new(1, -65, 0.5, -10)
-					btn.BackgroundColor3 = defaultTheme.SearchBackground
+					btn.Size = UDim2.new(0, 60, 0, 22)
+					btn.Position = UDim2.new(1, -65, 0.5, -11)
+					btn.BackgroundColor3 = Theme.MainBG
 					btn.AutoButtonColor = false
 					btn.Font = "GothamBold"
-					btn.TextSize = 12
-					btn.TextColor3 = Theme.Text
+					btn.TextSize = 11
+					btn.TextColor3 = Theme.TextGray
 					btn.Text = key.Name
 					btn.Parent = row
 					round(btn, 4)
+					local btnStroke = addStroke(btn, Theme.Border, 1)
 
 					local function resizeForText()
 						local textLen = #btn.Text
@@ -1314,21 +1337,26 @@ function MUILib:CreateWindow(opts)
 					label.Parent = r
 
 					local box = Instance.new("TextBox")
-					box.Size = UDim2.new(0, 115, 0, 20)
-					box.Position = UDim2.new(1, -120, 0.5, -10)
-					box.BackgroundColor3 = defaultTheme.SearchBackground
+					box.Size = UDim2.new(0, 115, 0, 22)
+					box.Position = UDim2.new(1, -120, 0.5, -11)
+					box.BackgroundColor3 = Theme.MainBG
 					box.ClearTextOnFocus = false
 					box.ClipsDescendants = true
 					box.Text = default
 					box.PlaceholderText = placeholder
 					box.PlaceholderColor3 = Theme.TextGray
 					box.TextColor3 = Theme.Text
-					box.Font = "GothamBold"
-					box.TextSize = 12
-					box.TextXAlignment = "Center"
+					box.Font = "GothamMedium"
+					box.TextSize = 11
+					box.TextXAlignment = "Left"
 					box.TextYAlignment = "Center"
 					box.Parent = r
 					round(box, 4)
+					addStroke(box, Theme.Border, 1)
+
+					local boxPadding = Instance.new("UIPadding")
+					boxPadding.PaddingLeft = UDim.new(0, 8)
+					boxPadding.Parent = box
 
 					box.FocusLost:Connect(function()
 						callback(box.Text)
