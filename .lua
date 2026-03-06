@@ -535,10 +535,11 @@ function MUILib:CreateWindow(opts)
 		t.B.AutomaticSize = "X"
 		t.B.BackgroundTransparency = 1
 		t.B.BorderSizePixel = 0
-		t.B.Text = (icon and "   " or "") .. name:upper()
+		t.B.Text = name:upper()
 		t.B.TextColor3 = Theme.TextGray
 		t.B.Font = "GothamBold"
 		t.B.TextSize = 13
+		t.B.TextXAlignment = "Center"
 		t.B.Parent = th
 		
 		local indicator = Instance.new("Frame")
@@ -616,7 +617,7 @@ function MUILib:CreateWindow(opts)
 			e.BackgroundTransparency = 1
 			e.Text = ""
 			e.AutoButtonColor = false
-			e.Visible = (#self.Tabs == 1) -- initially visible if first tab
+			e.Visible = (#win.Tabs == 1) -- initially visible if first tab
 			e.Parent = ns
 			table.insert(t.SideEntries, e)
 
