@@ -516,14 +516,13 @@ function MUILib:CreateWindow(opts)
 	ct.Parent = main
 
 	function win:AddTopTab(name, icon)
-		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil}
+		local t = {P = Instance.new("ScrollingFrame"), B = Instance.new("TextButton"), Window = self, CurrentSideEntry = nil, SideEntries = {}}
 		t.TabName = name
-		t.P.Size = UDim2.new(1, -30, 1, -32)
-		t.P.Position = UDim2.new(0, 15, 0, 32)
+		t.P.Size = UDim2.new(1, -20, 1, -20)
+		t.P.Position = UDim2.new(0, 10, 0, 10)
 		t.P.BackgroundTransparency = 1
 		t.P.BorderSizePixel = 0
 		t.P.Visible = false
-		-- Скролл есть, но сам скроллбар невидим
 		t.P.ScrollBarThickness = 4
 		t.P.ScrollBarImageTransparency = 1
 		t.P.Parent = ct
@@ -562,22 +561,44 @@ function MUILib:CreateWindow(opts)
 		
 		t.B.MouseButton1Click:Connect(function()
 			for _, v in pairs(self.Tabs) do 
-				if v.P.Visible then
-					tween(v.P, 0.15, {BackgroundTransparency = 1})
-					task.delay(0.15, function()
-						v.P.Visible = false
-					end)
-				end
+				v.P.Visible = false
 				v.B.TextColor3 = Theme.TextGray
 				if v.B:FindFirstChild("Indicator") then
 					v.B.Indicator.Visible = false
 				end
+				for _, se in pairs(v.SideEntries) do
+					se.Visible = false
+				end
 			end
-			t.P.BackgroundTransparency = 1
 			t.P.Visible = true 
-			tween(t.P, 0.15, {BackgroundTransparency = 0})
 			t.B.TextColor3 = Theme.Accent
 			t.B.Indicator.Visible = true
+			for _, se in pairs(t.SideEntries) do
+				se.Visible = true
+			end
+			-- trigger the first side entry if none selected
+			if t.CurrentSideEntry == nil and #t.SideEntries > 0 then
+				-- simulate click
+				for _, child in ipairs(t.P:GetChildren()) do
+					if child:IsA("Frame") and child.Name == "Content" then
+						child.Visible = false
+					end
+				end
+				t.CurrentSideEntry = t.SideEntries[1]
+				local cbg = t.CurrentSideEntry:FindFirstChild("Bg")
+				if cbg then
+					cbg.BackgroundTransparency = 0
+					local dl = cbg:FindFirstChild("Dot")
+					if dl then dl.BackgroundTransparency = 0 end
+					local ll = cbg:FindFirstChild("Label")
+					if ll then ll.TextColor3 = Theme.Text end
+					
+					-- find content
+					local contentName = t.CurrentSideEntry.Name .. "_Content"
+					local actualContent = t.P:FindFirstChild(contentName)
+					if actualContent then actualContent.Visible = true end
+				end
+			end
 		end)
 		table.insert(self.Tabs, t)
 		if #self.Tabs == 1 then 
@@ -595,7 +616,9 @@ function MUILib:CreateWindow(opts)
 			e.BackgroundTransparency = 1
 			e.Text = ""
 			e.AutoButtonColor = false
+			e.Visible = (#self.Tabs == 1) -- initially visible if first tab
 			e.Parent = ns
+			table.insert(t.SideEntries, e)
 
 		-- фон выбранной подвкладки
 		local bg = Instance.new("Frame")
@@ -637,20 +660,16 @@ function MUILib:CreateWindow(opts)
 		label.TextTruncate = Enum.TextTruncate.AtEnd
 		label.Parent = bg
 
-			-- Create content frame for this hero
 			local contentFrame = Instance.new("Frame")
-			contentFrame.Name = "Content"
+			contentFrame.Name = text .. "_Content"
 			contentFrame.Size = UDim2.new(1, 0, 0, 0)
 			contentFrame.AutomaticSize = "Y"
 			contentFrame.BackgroundTransparency = 1
-			contentFrame.Visible = false
+			contentFrame.Visible = (#self.Tabs == 1 and #t.SideEntries == 1)
 			contentFrame.Parent = t.P
 			local cfLayout = Instance.new("UIListLayout")
 			cfLayout.Padding = UDim.new(0, 8)
 			cfLayout.Parent = contentFrame
-			local cfPadding = Instance.new("UIPadding")
-			cfPadding.PaddingTop = UDim.new(0, 20)
-			cfPadding.Parent = contentFrame
 
 			local sideEntry = {}
 
@@ -683,56 +702,37 @@ function MUILib:CreateWindow(opts)
 			end)
 
 			e.MouseButton1Click:Connect(function()
-				-- Сбросить старую выбранную подвкладку внутри этого таба
 				if t.CurrentSideEntry and t.CurrentSideEntry ~= e then
 					local oldBg = t.CurrentSideEntry:FindFirstChild("Bg")
 					local oldInd = oldBg and oldBg:FindFirstChild("Dot")
 					local oldLabel = oldBg and oldBg:FindFirstChild("Label")
-					if oldLabel then
-						tween(oldLabel, 0.15, {TextColor3 = Theme.TextGray})
-					end
-					if oldBg then
-						tween(oldBg, 0.15, {BackgroundTransparency = 1})
-					end
-					if oldInd then
-						tween(oldInd, 0.15, {BackgroundTransparency = 1})
-					end
-					local oldContent = t.CurrentSideEntry:FindFirstChild("Content")
-					if oldContent then
-						tween(oldContent, 0.15, {BackgroundTransparency = 1})
-						task.delay(0.15, function()
-							oldContent.Visible = false
-						end)
-					end
+					if oldLabel then tween(oldLabel, 0.15, {TextColor3 = Theme.TextGray}) end
+					if oldBg then tween(oldBg, 0.15, {BackgroundTransparency = 1}) end
+					if oldInd then tween(oldInd, 0.15, {BackgroundTransparency = 1}) end
 				end
 
-				-- Скрыть все Content-фреймы этого таба (на случай, если что-то осталось видимым)
 				for _, child in ipairs(t.P:GetChildren()) do
-					if child:IsA("Frame") and child.Name == "Content" then
+					if child:IsA("Frame") and child.Name:match("_Content$") then
 						child.Visible = false
 					end
 				end
 
 				t.CurrentSideEntry = e
-				contentFrame.BackgroundTransparency = 1
 				contentFrame.Visible = true
 				tween(label, 0.15, {TextColor3 = Theme.Text})
 				tween(bg, 0.15, {BackgroundTransparency = 0})
 				tween(ind, 0.15, {BackgroundTransparency = 0})
 			end)
+
 			if not t.CurrentSideEntry then
-				for _, child in ipairs(t.P:GetChildren()) do
-					if child:IsA("Frame") and child.Name == "Content" then
-						child.Visible = false
-					end
-				end
 				t.CurrentSideEntry = e
 				setSelected(true)
 			end
+			
 			function sideEntry:CreateSection(title)
 				local sec = {}
 				local sf = Instance.new("Frame")
-				sf.Size = UDim2.new(1, -24, 0, 0)
+				sf.Size = UDim2.new(1, 0, 0, 0)
 				sf.AutomaticSize = "Y"
 				sf.BackgroundColor3 = Theme.PanelBG
 				sf.BackgroundTransparency = 0
@@ -758,7 +758,6 @@ function MUILib:CreateWindow(opts)
 				lt.TextXAlignment = "Left"
 				lt.TextTruncate = Enum.TextTruncate.AtEnd
 				lt.Parent = sf
-				-- Зарегистрировать секцию в поисковом индексе
 				table.insert(searchEntries, {
 					tab = t,
 					sectionFrame = sf,
@@ -766,8 +765,8 @@ function MUILib:CreateWindow(opts)
 					path = string.format("%s - %s", tostring(t.TabName or ""), tostring(e.Name or "Hero"))
 				})
 				local c = Instance.new("Frame")
-				c.Size = UDim2.new(1, -24, 0, 0)
-				c.Position = UDim2.new(0, 12, 0, 40)
+				c.Size = UDim2.new(1, 0, 0, 0)
+				c.Position = UDim2.new(0, 0, 0, 40)
 				c.AutomaticSize = "Y"
 				c.BackgroundTransparency = 1
 				c.Parent = sf
@@ -776,7 +775,9 @@ function MUILib:CreateWindow(opts)
 				cl.Parent = c
 				local cp = Instance.new("UIPadding")
 				cp.PaddingTop = UDim.new(0, 8)
-				cp.PaddingBottom = UDim.new(0, 12)
+				cp.PaddingBottom = UDim.new(0, 16)
+				cp.PaddingLeft = UDim.new(0, 16)
+				cp.PaddingRight = UDim.new(0, 16)
 				cp.Parent = c
 
 				local RIGHT_COLUMN_WIDTH = 120
@@ -792,26 +793,31 @@ function MUILib:CreateWindow(opts)
 					local label = Instance.new("TextLabel")
 					label.Text = o.Text or "Toggle"
 					label.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 1, 0)
+					label.Position = UDim2.new(0, 0, 0, 0)
 					label.BackgroundTransparency = 1
 					label.TextColor3 = Theme.Text
 					label.Font = "GothamBold"
 					label.TextSize = 12
 					label.TextXAlignment = "Left"
+					label.TextYAlignment = "Center"
 					label.TextTruncate = Enum.TextTruncate.AtEnd
 					label.Parent = r
 
 					if o.SubText then
+						label.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 18)
+						label.TextYAlignment = "Bottom"
 						local sub = Instance.new("TextLabel")
 						sub.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 16)
-						sub.Position = UDim2.new(0, 0, 0, 24)
+						sub.Position = UDim2.new(0, 0, 0, 20)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
 						sub.TextColor3 = Theme.TextGray
-						sub.Font = "GothamBold"
+						sub.Font = "GothamMedium"
 						sub.TextSize = 11
 						sub.TextXAlignment = "Left"
+						sub.TextYAlignment = "Top"
 						sub.Parent = r
-						r.Size = UDim2.new(1, 0, 0, 40)
+						r.Size = UDim2.new(1, 0, 0, 36)
 					end
 
 					local bg = Instance.new("TextButton")
@@ -955,8 +961,26 @@ function MUILib:CreateWindow(opts)
 					label.Font = "GothamBold"
 					label.TextSize = 12
 					label.TextXAlignment = "Left"
+					label.TextYAlignment = "Center"
 					label.TextTruncate = Enum.TextTruncate.AtEnd
 					label.Parent = r
+
+					if o.SubText then
+						label.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 18)
+						label.TextYAlignment = "Bottom"
+						local sub = Instance.new("TextLabel")
+						sub.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 16)
+						sub.Position = UDim2.new(0, 0, 0, 20)
+						sub.BackgroundTransparency = 1
+						sub.Text = resolveText(o.SubText)
+						sub.TextColor3 = Theme.TextGray
+						sub.Font = "GothamMedium"
+						sub.TextSize = 11
+						sub.TextXAlignment = "Left"
+						sub.TextYAlignment = "Top"
+						sub.Parent = r
+						r.Size = UDim2.new(1, 0, 0, 36)
+					end
 
 					local valueBg = Instance.new("Frame")
 					valueBg.Size = UDim2.new(0, 40, 0, 20)
@@ -1150,13 +1174,14 @@ function MUILib:CreateWindow(opts)
 					if o.SubText then
 						local sub = Instance.new("TextLabel")
 						sub.Size = UDim2.new(1, -12, 0, 16)
-						sub.Position = UDim2.new(0, 0, 0, 18)
+						sub.Position = UDim2.new(0, 0, 0, 20)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
 						sub.TextColor3 = Theme.TextGray
-						sub.Font = "GothamBold"
+						sub.Font = "GothamMedium"
 						sub.TextSize = 11
 						sub.TextXAlignment = "Left"
+						sub.TextYAlignment = "Top"
 						sub.Parent = c
 						label.Size = UDim2.new(1, -12, 0, 18)
 					end
@@ -1229,20 +1254,24 @@ function MUILib:CreateWindow(opts)
 					label.Font = "GothamBold"
 					label.TextSize = 13
 					label.TextXAlignment = "Left"
+					label.TextYAlignment = "Center"
 					label.Parent = row
 
 					if o.SubText then
+						label.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 18)
+						label.TextYAlignment = "Bottom"
 						local sub = Instance.new("TextLabel")
 						sub.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 16)
-						sub.Position = UDim2.new(0, 0, 0, 24)
+						sub.Position = UDim2.new(0, 0, 0, 20)
 						sub.BackgroundTransparency = 1
 						sub.Text = resolveText(o.SubText)
 						sub.TextColor3 = Theme.TextGray
-						sub.Font = "GothamBold"
+						sub.Font = "GothamMedium"
 						sub.TextSize = 11
 						sub.TextXAlignment = "Left"
+						sub.TextYAlignment = "Top"
 						sub.Parent = row
-						row.Size = UDim2.new(1, 0, 0, 40)
+						row.Size = UDim2.new(1, 0, 0, 36)
 					end
 
 					local btn = Instance.new("TextButton")
@@ -1334,7 +1363,25 @@ function MUILib:CreateWindow(opts)
 					label.Font = "GothamBold"
 					label.TextSize = 12
 					label.TextXAlignment = "Left"
+					label.TextYAlignment = "Center"
 					label.Parent = r
+
+					if o.SubText then
+						label.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 18)
+						label.TextYAlignment = "Bottom"
+						local sub = Instance.new("TextLabel")
+						sub.Size = UDim2.new(1, -(RIGHT_COLUMN_WIDTH + RIGHT_COLUMN_MARGIN), 0, 16)
+						sub.Position = UDim2.new(0, 0, 0, 20)
+						sub.BackgroundTransparency = 1
+						sub.Text = resolveText(o.SubText)
+						sub.TextColor3 = Theme.TextGray
+						sub.Font = "GothamMedium"
+						sub.TextSize = 11
+						sub.TextXAlignment = "Left"
+						sub.TextYAlignment = "Top"
+						sub.Parent = r
+						r.Size = UDim2.new(1, 0, 0, 36)
+					end
 
 					local box = Instance.new("TextBox")
 					box.Size = UDim2.new(0, 115, 0, 22)
